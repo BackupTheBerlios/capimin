@@ -18,3 +18,5 @@ newfax_sendtime=Run at time
 
 list_all=Select all
 list_invert=Invert selection
+
+change_job_error=Failed to change the fax/job

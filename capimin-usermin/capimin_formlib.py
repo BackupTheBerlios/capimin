@@ -117,7 +117,13 @@ def FormChangeJob(user,formdata):
             filetype = formdata["filetype"][cindex].value            
             
             capifaxwm.change_job(user,cjobid,cslist,dialstring,filetype,jtime,addressee,subject,jtries)
-            
+        except capifaxwm.CSInternalError,err:
+            LocalHeader()
+            print "<p><b>%s: Internal error (e.g. function called with wrong params): %s</b></p>" %\
+                  (webmin.text.get('error','').upper(),err)            
+        except capifaxwm.CSJobChangeError,err:
+            LocalHeader()
+            print "<p><b>%s: %s: %s</b></p>" % (webmin.text.get('error','').upper(),webmin.text.get('change_job_error',''),err)             
         except:
             LocalHeader()
             print "<br><b>%s:  - JobID: %s</b><br>" %(webmin.text.get('error','').upper(),cjobid)

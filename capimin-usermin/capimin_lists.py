@@ -1,23 +1,23 @@
 # Written by Carsten <cibi@users.berlios.de>
 # Copyright (C) 2003,2004 Carsten (http://capimin.berlios.de)
 # 
-# Based on the list function from (http://capisuite.de):
-#             capisuitefax - capisuite tool for enqueuing faxes
-#            ---------------------------------------------------
-#    copyright            : (C) 2002 by Gernot Hillier
-#    email                : gernot@hillier.de
-#    version              : $Revision: 1.10 $
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License. 
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #
-# Coding style: Max linewidth 120 chars
-#
+# Coding style: Max linewidth 120 chars, 4 spaces per tab
 # 
+
 
 
 import webmin
@@ -69,8 +69,8 @@ def ShowSend(user,changepage="change.cgi",newpage="",dldpage="",removepage=""):
             cs_helpers.getOption(control,"GLOBAL","addressee","")
         print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","tries")
     
-        print '   <td nowrap><input name="year" type="text" size="4" maxlength="4" value="%s">-<select name="month">' %\
-              starttime[0]
+        print '   <td nowrap><input name="year" type="text" size="4" maxlength="4" value="%s">-<select'\
+              ' name="month">' % starttime[0]
         for i in range(1,13):
             selected =""
             if i==starttime[1]:
@@ -149,8 +149,8 @@ def ShowSend2(user,changepage="change.cgi",formname=""):
                               cs_helpers.getOption(control,"GLOBAL","addressee","")
         print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","tries")
     
-        print '   <td nowrap><input name="year" type="text" size="4" maxlength="4" value="%s">-<select name="month">' %\
-                            starttime[0]
+        print '   <td nowrap><input name="year" type="text" size="4" maxlength="4" value="%s">-<select'\
+              ' name="month">' % starttime[0]
         for i in range(1,13):
             selected =""
             if i==starttime[1]:
@@ -179,15 +179,15 @@ def ShowSend2(user,changepage="change.cgi",formname=""):
     print '<input type="hidden" name="cslist" value="%s">' % cslist
     # java script code to select / invert select the checkboxes
     print "<a href='' onClick='document.forms[\"%s\"].cindex.checked = true;"\
-          " for(i=0; i<document.forms[\"%s\"].cindex.length; i++) { document.forms[\"%s\"].cindex[i].checked = true; }"\
-          " return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
+          " for(i=0; i<document.forms[\"%s\"].cindex.length; i++) { document.forms[\"%s\"].cindex[i].checked ="\
+          " true; } return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
     print "&nbsp;&nbsp;<a href='' onClick='document.forms[\"%s\"].cindex.checked ="\
           " !document.forms[\"%s\"].cindex.checked; for(i=0; i<document.forms[\"%s\"].cindex.length; i++)"\
           " { document.forms[\"%s\"].cindex[i].checked = !document.forms[\"%s\"].cindex[i].checked; }"\
           " return false'>%s</a>"  % (formname,formname,formname,formname,formname,webmin.text['list_invert'])
-    # submut buttons
-    print '<br><br><input type=submit name="change" value="%s">&nbsp;&nbsp;&nbsp;&nbsp;<input type=submit name="delete"'\
-          ' value="%s"></form>' % (webmin.text['index_change'],webmin.text['delete'])
+    # submit buttons
+    print '<br><br><input type=submit name="change" value="%s">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'\
+          '<input type=submit name="delete" value="%s"></form>' % (webmin.text['index_change'],webmin.text['delete'])
     
     print '<!-- END================ Show New Send queue =================== -->'
 
@@ -261,8 +261,8 @@ def ShowReceived(user,fileprefix="fax",forwardopt=0,newpage="newfax.cgi",dldpage
     print '<input type="hidden" name="cslist" value="%s">' % qtype
     # java script code to select / invert select the checkboxes
     print "<a href='' onClick='document.forms[\"%s\"].cjobid.checked = true;"\
-          " for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = true; }"\
-          " return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
+          " for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked ="\
+          " true; } return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
     print "&nbsp;&nbsp;<a href='' onClick='document.forms[\"%s\"].cjobid.checked ="\
           " !document.forms[\"%s\"].cjobid.checked; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++)"\
           " { document.forms[\"%s\"].cjobid[i].checked = !document.forms[\"%s\"].cjobid[i].checked; }"\
@@ -293,7 +293,9 @@ def ShowGlobal(user,cslist="faxdone",newpage="",dldpage="",removepage="",formnam
     print '<table border="1">\n <tr bgcolor=#%s>' % webmin.tb
     if removepage:
         print '   <th>&nbsp;</th>' 
-    print '   <th>%s</th><th>%s</th><th>%s</th><th>%s</th>' %  (webmin.text['index_id'],webmin.text['index_dialstring'],webmin.text['index_addressee'],webmin.text['index_tries'])
+    print '   <th>%s</th><th>%s</th><th>%s</th><th>%s</th>' %\
+          (webmin.text['index_id'],webmin.text['index_dialstring'],webmin.text['index_addressee'],
+           webmin.text['index_tries'])
     print '   <th>Time</th><th>%s</th>' % webmin.text['index_subject']
     print ' </tr>'
     
@@ -326,8 +328,8 @@ def ShowGlobal(user,cslist="faxdone",newpage="",dldpage="",removepage="",formnam
 
     # java script code to select / invert select the checkboxes
     print "<a href='' onClick='document.forms[\"%s\"].cjobid.checked = true;"\
-          " for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = true; }"\
-          " return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
+          " for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked ="\
+          " true; } return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
     print "&nbsp;&nbsp;<a href='' onClick='document.forms[\"%s\"].cjobid.checked ="\
           " !document.forms[\"%s\"].cjobid.checked; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++)"\
           " { document.forms[\"%s\"].cjobid[i].checked = !document.forms[\"%s\"].cjobid[i].checked; }"\

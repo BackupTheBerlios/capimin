@@ -92,10 +92,10 @@ except capifaxwm.CSUserInputError,err:
     print "<p><b>%s: Invalid Formvalue(s): %s</b></p>" % (webmin.text.get('error','').upper(),err)
 except capifaxwm.CSJobChangeError,err:
     LocalHeader()
-    print "<p><b>%s: Failed to change the job: %s</b></p>" % (webmin.text.get('error','').upper(),err)
+    print "<p><b>%s: %s: %s</b></p>" % (webmin.text.get('error','').upper(),webmin.text.get('change_job_error',''),err)
 except "NoneSelected":
     LocalHeader()
-    print "<p><b> No job selected</b></p>"
+    print "<p><b> No job selected<br>(if you use the browser back button, the form usually still holds your changes)</b></p>"
 
 if IsHeaderShown():
     print "<br><hr>"

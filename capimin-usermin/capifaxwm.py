@@ -1,16 +1,33 @@
-# Most/all fax functions in this file are  form (modified for html/webmin):
-#             capisuitefax - capisuite tool for enqueuing faxes
-#            ---------------------------------------------------
+# Written by Carsten <cibi@users.berlios.de>
+# Copyright (C) 2003,2004 Carsten (http://capimin.berlios.de)
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License. 
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+# Uses functions from CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.22 $
+#    version              : $Revision: 1.23 $
+# http://www.capisuite.de
+
+# Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
+# Copyright (C) 2002 Cendio Systems AB (http://www.cendio.se)
+
+
 #
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-# for the rest: http://capimin.berlios.de email: cibi@users.berlios.de
+# Coding style: Max linewidth 120 chars, 4 spaces per tab
+# - in change, not all lines fit currently 120
+# 
 
 
 import webmin
@@ -121,18 +138,6 @@ def load_user_config():
         webmin.read_file_cached(webmin.module_config_directory+os.sep+'uconfig',webmin.userconfig)
         if not _skip_user_config_file:
             webmin.read_file_cached(webmin.user_module_config_directory+os.sep+'config',webmin.userconfig)
-
-# will be replaced with the same function in the webmin module
-def date_chooser_button(dayfield, monthfield, yearfield, formno=0):
-    if not dayfield or not monthfield or not yearfield:
-        return ""
-    return '<input type=button onClick=\'window.dfield = document.forms[%s].%s; window.mfield = document.forms[%s].%s; \
-window.yfield = document.forms[%s].%s; \
-window.open("%s/date_chooser.cgi?day="+escape(dfield.value)+"&month="+escape(mfield.selectedIndex)+"&year="+yfield.value, \
-"chooser", "toolbar=no,menubar=no,scrollbars=yes,width=250,height=225")\' value="...">\n' % \
-        (formno,dayfield,formno,monthfield,formno,yearfield,webmin.gconfig.get('webprefix',''))
-
-
 
 # @brief Generates the path for a list/queue, capiconfig_init(...) pre-required
 #
@@ -298,16 +303,16 @@ def change_job(user,jobid,cslist,dialstring,filetype,jtime,addressee="",subject=
     if (checkconfig() == -1) or (checkfaxuser(user,1) == 0):
         raise CSConfigError
     if not listtypes.has_key(cslist) or CheckJobID(jobid)==-1:
-        raise CSInternalError("Invalid list/queue type oder jobid provided")
+        raise CSInternalError("Invalid list/queue type or jobid provided")
     dialstring = ConvertDialString(dialstring)
     if not dialstring:
         raise CSUserInputError("Invalid dailstring")
-    # the next two line if statements, limit this funtion to only
+    # the next two line of if-statements, limit this funtion to only
     # modify the fax send queue
     if not filetype or filetype!="sff" or not filetype!="cff":
         raise CSInternalError("Invalid job filetype (sff/cff)")
     if cslist!="faxsend":
-        raise CSInternalError("Cannot modify any queue than fax send")
+        raise CSInternalError("Cannot modify any other queue than fax send")
     
     if not addressee:
         addressee=""
@@ -322,7 +327,10 @@ def change_job(user,jobid,cslist,dialstring,filetype,jtime,addressee="",subject=
         raise CSInternalError("Can't write to queue dir: "+cslist)
     job = BuildJobFile(user,jobid,cslist)
     
-
+    # check if job file still exists -> if not, the job might already be send or deleted
+    if not os.path.exists(qpath+job):
+        raise CSJobChangeError("Job doesn't exists anymore - fax already send or deleted")
+    
     try:
         lockfile=open(qpath+job[:-3]+"lock","w")
         # lock so that it isn't deleted while sending
