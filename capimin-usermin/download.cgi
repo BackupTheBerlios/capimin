@@ -12,7 +12,7 @@
 #         -----------------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.5 $
+#    version              : $Revision: 1.6 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -48,10 +48,14 @@ capifaxwm.capiconfig_init()
 # soxvolume: default= 1.0, increases volume if >1.0 and decreace if <1.0
 # added because of http://lists.berlios.de/pipermail/capisuite-users/2003-October/000363.html
 soxvolume="1"
-if not OldWebminpy and webmin.userconfig.has_key('sox_volume'):
-    soxvolume = str(wm_pytools.ExtractFloatConfig(webmin.userconfig['sox_volume'],soxvolume,0))
-    
-		    
+intfaxformat=0
+if not OldWebminpy and webmin.userconfig:
+    if webmin.userconfig.has_key('sox_volume'):
+	soxvolume = str(wm_pytools.ExtractFloatConfig(webmin.userconfig['sox_volume'],soxvolume,0))
+    if webmin.userconfig.has_key('fax_download'):
+	intfaxformat = wm_pytools.ExtractIntConfig(webmin.userconfig['fax_download'],0,0,3)
+
+faxformat=['sff','tif','ps','pdf'][intfaxformat]
 
 try:
     form = cgi.FieldStorage()
@@ -74,7 +78,7 @@ try:
     if qtype=="faxreceived":
 	qpath=os.path.join(capifaxwm.UsersFax_Path,webmin.remote_user,"received")+os.sep
 	jobfile="fax-"+jobid+".txt"
-	fileext="sff"
+	fileext=faxformat
     elif qtype=="voicereceived":
 	qpath=os.path.join(capifaxwm.UsersVoice_Path,webmin.remote_user,"received")+os.sep
 	jobfile="voice-"+jobid+".txt"
@@ -91,14 +95,12 @@ try:
         raise capifaxwm.CSConfigError
     basename=datafilename[:datafilename.rindex('.')+1]
     if fileext=="wav":
-	#la -> wav
-	# don't use stdout as sox needs a file to be able to seek in it otherwise the header will be incomplete
-	ret = os.spawnlp(os.P_WAIT,"sox","sox","-v",soxvolume,datafilename,basename+"wav")
-	
-	if (ret or not os.access(basename+"wav",os.R_OK)):
-    	    raise "conv-error","Error while calling sox. File damaged or sox not installed?"
-	datafilename = basename+"wav"
-    
+	capifaxwm.ConvertAudio2Sox(datafilename,basename+fileext,soxvolume)
+	datafilename = basename+fileext
+    if fileext=="tif" or fileext=="ps" or fileext=="pdf":	
+	capifaxwm.ConvertSFF(datafilename,basename+fileext,fileext)
+	datafilename = basename+fileext
+	    
     datafile = open(datafilename,'rb').read()
     sendname=jobfile[:-3]+fileext    
     sys.stdout.write('Content-type: '+contenttype+'; name="'+sendname+'"\r\n')    
@@ -106,8 +108,8 @@ try:
     sys.stdout.write('Content-Length: '+str(len(datafile))+'\r\n')
     sys.stdout.write('\r\n')
     sys.stdout.write(datafile)
-    if fileext=="wav":
-	os.unlink(datafilename)
+    if fileext=="wav" or fileext=="tif" or fileext=="ps" or fileext=="pdf":
+	os.remove(datafilename)
 except "conv-error",errormessage:
     webmin.header("Download", nomodule=1)    
     print "<hr>"

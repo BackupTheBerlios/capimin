@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.7 $
+#    version              : $Revision: 1.8 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -262,21 +262,72 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
     
 
 
-def ConvertAudio2Sox(ulawfile,wavfile,volume=1.0):
-    raise NotImplementedError
+def ConvertAudio2Sox(lafile,wavfile,volume=1.0):
     if not ulawfile or not wavfile:
-	return -1
+	return "conv-error","False parameter (no in and/or outputfile)"
 	    
     #la -> wav
     # don't use stdout as sox needs a file to be able to seek in it otherwise the header will be incomplete
-    ret = os.spawnlp(os.P_WAIT,"sox","sox","-v",volume,ulawfile,wavfile)
+    ret = os.spawnlp(os.P_WAIT,"sox","sox","-v",volume,lafile,wavfile)
 	
     if (ret or not os.access(wavfile,os.R_OK)):
 	raise "conv-error","Error while calling sox. File damaged or sox not installed?"
 
-def ConvertSFF2PDF(sfffile,pdfile):
-    raise NotImplementedError
+
+
+
+def ConvertSFF(sfffile,destfile,desttype="pdf"):
+    if not sfffile or not destfile or not desttype:
+	raise "conv-error","False parameter (no in and/or outputfile)"
+    if desttype!="pdf" and desttype!="ps" and desttype!="tif":
+	raise "conv-error","False parameter (no in and/or outputfile)"
     
+    # sff -> tif
+    if desttype=="tif":
+	outfile=destfile
+    else:
+	outfile=destfile+".tif"
+    ret=os.spawnlp(os.P_WAIT,"sfftobmp","sfftobmp","-tif",sfffile,outfile)
+    if (ret or not os.access(outfile,os.F_OK)):
+	raise "conv-error","Can't convert sff to tif. sfftobmp not installed?"
+    if desttype=="tif":
+	return
+    
+    # tif -> ps
+    infile=outfile
+    if desttype=="ps":
+	outfile=destfile
+    else:
+	outfile=destfile+".ps"
+    ret=os.spawnlp(os.P_WAIT,"tiff2ps","tiff2ps","-a",infile,"-O",outfile)
+    if (ret or not os.access(outfile,os.F_OK)):
+	raise "conv-error","Can't convert tif to ps (tif file is created from sff). tiff2ps not installed?"
+    remtempfailed=[]
+    try:
+        os.remove(infile)
+    except:
+	remtempfailed.append(infile)
+    if desttype=="ps":
+	return remtempfailed
+    
+    # ps -> pdf
+    infile=outfile
+    ret=os.spawnlp(os.P_WAIT,"ps2pdf","ps2pdf",infile,destfile)
+    if (ret or not os.access(destfile,os.F_OK)):
+	raise "conv-error","Can't convert ps to pdf (ps created from sff -> tif -> ps ). ps2pdf not installed?"
+    try:
+        os.remove(infile)
+    except:
+	remtempfailed.append(infile)
+    return remtempfailed
+    
+ 
+def ConvertCFF2PDF(cfffile,pdffile):
+    raise NotImplementedError
+    if not cfffile or not pdffile:
+	return "conv-error","False parameter (no in and/or outputfile)"
+
+
 
 #def abortfax(user, faxid):
 #    if user == "" or faxid == "":
