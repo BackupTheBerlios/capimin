@@ -1,4 +1,0 @@
-allow_faxnext_chown=Erlaube die Änderung der Zugriffsrechte an der "fax-nextnr" Datei (sendq)?,1,1-ja,0-nein
-remove_gdirs=Löschen von Dateien in der Failed und Done Liste erlauben?,1,1-ja,0-nein
-allow_dialprefix_choose=Darf der Benutzter den Nummernpräfix ausschalten?,1,1-ja,0-nein
-ogg_download=Ogg Unterstützung (nein=Benutzer kann ogg konfigurieren aber nicht herunterladen),1,1-ja,0-nein,2-sox alt

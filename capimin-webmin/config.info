@@ -1,4 +1,0 @@
-allow_faxnext_chown=Allow permission change to nextfax-number file in sendq?,1,1-yes,0-no
-remove_gdirs=Allow removing files in failed and done directories?,1,1-yes,0-no
-allow_dialprefix_choose=Allow disabling dial prefix ?,1,1-yes,0-no
-ogg_download=Ogg support (no=user can config ogg but not dld. it),1,1-yes,0-no,2-old sox
