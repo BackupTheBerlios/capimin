@@ -52,7 +52,7 @@ try:
             raise "NoneSelected"
         timechange=None
         if form.has_key("onehlater"):
-            timechange=60
+            timechange=3600
         FormChangeJob(user,form,timechange)
         if not IsHeaderShown():
             webmin.redirect()

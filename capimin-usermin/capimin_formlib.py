@@ -59,8 +59,8 @@ def FormTime2CSTime(formtime, timediff=None):
             timediff=wm_pytools.ToLong(timediff)
         if timediff:
             temptime = time.mktime(timestruct)
-            temptime = temptime + timediff
-            timestruct = time.gmtime(temptime)
+            temptime = temptime + timediff            
+            timestruct = time.localtime(temptime)
         cstime = time.asctime(timestruct)
     except:
         raise capifaxwm.CSUserInputError("Invalid time and/or date from Formdata")
