@@ -459,7 +459,7 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
     
     filetype = os.path.splitext(sourcefile)[1].lower()[1:] # splittext returns a list of 2, so no "None" check needed
     if not filetype:
-        raise CSUserInputError("nvalid input (fax) file")
+        raise CSUserInputError("Invalid input (fax) file")
     
     # Convert to empty string, if set to "None"
     if addressee==None: addressee=""

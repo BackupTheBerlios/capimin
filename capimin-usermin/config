@@ -7,3 +7,4 @@ remove_ask=1
 allow_faxnext_chown=1
 remove_gdirs=1
 noprefs=0
+allow_dialprefix_choose=1

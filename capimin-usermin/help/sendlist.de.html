@@ -1,0 +1,51 @@
+<header>Fax Ausgang &uuml;berwachen und bearbeiten</header>
+<p>Die einzelnen Fax lassen sich direkt in der Liste &auml;ndern.<br>
+Um die &Auml;nderung durchzuf&uuml;hren, muss die Auswahlbox (Checkbox) des jeweiligen Fax (mehrere m&ouml;glich) ausw&auml;hlt sein -
+dann einfach auf &quot;&Auml;ndern&quot; klicken.</p>
+<p><b>Tabellen Spalten:</b><br>
+<a href="#checkbox">Auswahlbox</a>&nbsp;<a href="#id">ID</a>&nbsp;<a href="#number">Faxnummer</a>&nbsp;<a href="#addressse">Adressat</a>&nbsp;
+<a href="#tries">Versuche</a>&nbsp;<a href="#starttime">N&auml;chster Versuch</a>&nbsp;<a href="#subject">Betreff</a><br>
+<b>Befehle:</b><br>
+<a href="#selectall">Alle ausw&auml;hlen</a>&nbsp;<a href="#selectall">Auswahl umkehren</a>&nbsp;<a href="#change">&Auml;ndern</a>&nbsp;<a href="#changesend">&Auml;ndern
+&amp; Senden</a>&nbsp;<a href="#1hlater">1hsp&auml;ter</a>&nbsp;<a href="#delete">L&ouml;schen</a><br>
+</p>
+<p><a name="checkbox"></a><i>Auswahlbox</i><br>
+Hier kann man die Faxe ausw&auml;hlen, die man &auml;ndern/l&ouml;schen will. (s.h. auch Befehle)</p>
+<p><a name="id"></a><i>ID</i><br>
+Jeder Vorgang&nbsp; (Fax/Sprache) hat eine eindeutige Identifikationsnummer. Diese wird automatisch erstellt und
+fortlaufend nummeriert, jedes Mal wenn man ein Fax erstellt, ein Fax oder einen AB-Aufzeichnung erfolgt.</p>
+<p><a name="number"></a><i>Faxnummer</i><br>
+Empf&auml;ngeradresse des Fax. Capimin unterst&uuml;tzt die Eingabe folgende Hilfszeichen: +-()/ und Leerzeichen (space).</p>
+<p><a name="addressse"></a><i>Adressat</i><br>
+Name oder Beschreibung der Empf&auml;ngeradresse (optional)</p>
+<p><a name="tries"></a><i>Versuche</i><br>
+Zeigt die Sendeversuche an, die CapiSuite bisher unternommen hat, um das Fax zu versenden.<br>
+Bei &uuml;berschreiten der in der CapiSuite Konfiguration angebebenen max. Versuche, wird das Fax in das &quot;failed&quot;
+Verzeichnisse verschoben.</p>
+<p><a name="starttime"></a><i>N&auml;chster Versuch</i><br>
+Zeigt die Startzeit an, wann das Fax versendet wird, bzw. erneut versucht wird das Fax zu senden.<br>
+Das Datum (Jahr, Monat, Tag) muss angegeben werden. Minute/Stunde werden jeweils auf &quot;0&quot; gesetzt, falls nicht
+angegeben.</p>
+<p><a name="subject"></a><i>Betreff</i><br>
+Beschreibung des Faxauftrags (optional)</p>
+<p><a name="selectall"></a><i>Alle ausw&auml;hlen</i> and <i>Auswahl umkehren</i><br>
+JavaScript Hilfsfunktionen um alle faxe auszuw&auml;hlen, bzw. die aktuelle Auswahl umzukehren<br>
+(JavaScript muss im Webbrowser aktiviert sein um diese Funktion benutzen zu k&ouml;nnen)</p>
+<p><a name="change"></a><i>&Auml;ndern</i><br>
+&Auml;ndern der ausgew&auml;hlten Faxe.<br>
+Hinweis: Wenn kein Fax ausgew&auml;hlt wurde (keine <a href="#checkbox"><i>Auswahlbox</i></a> markiert), aber Daten
+bearbeitet wurden, &auml;ndert sich nichts.</p>
+<p><a name="changesend"></a><i>&Auml;ndern &amp; Senden</i><br>
+F&uuml;hrt (eventuelle) &Auml;nderungen an den ausgew&auml;hlten Faxen durch und sendet diese sofort.<br>
+&nbsp;(Die Startzeit wird auf die aktuelle Zeit gesetzt und das Fax dann gesendet, wenn CapiSuite das n&auml;chste mal den
+Faxausgang &uuml;berpr&uuml;ft)</p>
+<p><a name="delete"></a><i>L&ouml;schen</i><br>
+Entfernt die ausgew&auml;hlten Faxauftr&auml;ge aus dem Faxausgang und l&ouml;scht diese unwiderruflich.</p>
+<p><a name="1hlater"></a><i>1h sp&auml;ter</i><br>
+Add one hour to the start time for the selected faxes.<br>
+<i>Note:</i> This function doesn't work correct (at least with Python 2.2.1/SuSE 8.1)<br>
+When changing the time for a fax which is in another daylight saving time (DST) than the current day, then this function
+adds/subtracts also the DST changes<br>
+No Problems with SuSE 9.0 and Python 2.3/ Win32 and Python 2.3</p>
+<hr>
+

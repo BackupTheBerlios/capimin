@@ -1,11 +1,23 @@
 #!/usr/bin/python
-# forward a fax: import the data from a queue file and show a form to enter a new destination
+# Written by Carsten <cibi@users.berlios.de>
+# Copyright (C) 2003,2004 Carsten (http://capimin.berlios.de)
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License. 
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
 #
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-# http://capimin.berlios.de email: cibi@users.berlios.de
+# Coding style: Max linewidth 120 chars (in progress...)
+#               4 spaces per tab
 
 
 import sys
@@ -13,7 +25,7 @@ sys.path.append("..")
 sys.stderr = sys.stdout # Send errors to browser
 import webmin
 import capifaxwm
-import cs_helpers,os, re,getopt, cgi, time, fcntl, shutil, tempfile
+import cs_helpers,os, re,getopt, cgi, time, fcntl, shutil, tempfile,wm_pytools
 
 
 subject = ""
@@ -41,8 +53,8 @@ header_shown=0
 def local_header():
     global header_shown
     if header_shown==1:
-        return
-    webmin.header("Capisuite -  create/forward/answer fax",  config=None, nomodule=1)
+        return    
+    webmin.header(webmin.text['newfax_title'],  config=None, nomodule=1)
     print "<hr><br>"
     header_shown=1
 
@@ -108,31 +120,33 @@ def importqfax(jobid,qtype):
 #    addressee = control.get("GLOBAL","addressee")
     return newpath+tmpjobfile
 
-def shownewform(fjobid="",fqtype=""):
+def shownewform(user,fjobid="",fqtype="",choose_dialprefix=None):
     curtime = time.localtime()
     NoneStringToEmpty()
     enctype=""
-    title="Forward"
     if formActionType.startswith("new"):
         enctype='enctype="multipart/form-data"'
-        title="New"
+        title=webmin.text['newfax_new_tablehead']
+    else:
+        title=webmin.text['newfax_forward_tablehead']
 
+    dialprefix=cs_helpers.getOption(capifaxwm.CAPI_config,user,"dial_prefix","")    
+    
     if isMultiForward==1:
         print '<table border="1"><tr bgcolor=#%s><th>====== Warning =======</th></tr>  ' % (webmin.tb)
-        print ' <tr bgcolor=#%s><td>Capimin allows you to forward only <b><i>one</i></b> fax per request,<br>'  % (webmin.cb)
+        print ' <tr bgcolor=#%s><td>Capimin allows you to forward only <b><i>one</i></b>'\
+              ' fax per request,<br>' % (webmin.cb)
         print '     but you have selected more than one fax to forward<br>'
         print '     You are now going to foward the fax with the JobID <b>%s</b><br>' % jobid
         print '     (just return to the main page if you don\'t want to do this)</td></tr></table><p>&nbsp;</p>'
-    #if formActionType.startswith("forward"):
-#       print "<p> The received fax document may includes information from where and when you reiceived it.<br>"
-#       print "Download and edit the fax if you don't want to send this information with the new fax</p>"
+
     print '<table border="1">' 
     print ' <tr bgcolor=#%s><th>%s</th></tr>  ' % (webmin.tb,title)
     print ' <tr bgcolor=#%s><td><form METHOD="POST" ACTION="newfax.cgi" %s>' % (webmin.cb,enctype)
     print '   <table>'
     if formActionType.startswith("forward"):
-        print '    <tr><td colspan="2"><i>The received fax document may includes information from where and when you received it<br>'
-        print '            Download and edit the fax if you don\'t want to send this information with the new fax</i><br>&nbsp;</td></tr>'
+        print '    <tr><td colspan="2"><i>%s<br>' % webmin.text['newfax_forwardwarn1']
+        print '            %s</i><br>&nbsp;</td></tr>' % webmin.text['newfax_forwardwarn2']
     print '    <tr><td><b>%s</b></td><td>' % webmin.text['newfax_senddate']
     print '        <input name="year" type="text" size="4" maxlength="4" value="%s">-<select name="month">' % curtime[0]
     for i in range(1,13):
@@ -143,21 +157,38 @@ def shownewform(fjobid="",fqtype=""):
 
     print '        </select>-<input name="day" size="2" maxlength="2" value="%s">' % curtime[2]
     print webmin.date_chooser_button("day","month","year")
-    print '        &nbsp;<b>%s</b>&nbsp;<input name="hour" size="2" maxlength="2" value="%s">:<input name="min" size="2" maxlength="2" value="%02d"></td></tr>' % (webmin.text['newfax_sendtime'],curtime[3],curtime[4])
-    print '    <tr><td><b>Destination</b> (dialstring)</td><td><input type="text" name="dialstring" size=20 value="%s"></td></tr>' % cgi.escape(dialstring,1)
-    print '    <tr><td><b>Addresse</b></td><td><input type=text name="addressee" size=20 value="%s"></td></tr>' % cgi.escape(addressee,1)
-    print '    <tr><td><b>Subject</b></td><td><input type=text name="subject" size=80 value="%s"></td></tr>' % cgi.escape(subject,1)
+    print '        &nbsp;<b>%s</b>&nbsp;<input name="hour" size="2" maxlength="2" value="%s">:<input name="min"'\
+          ' size="2" maxlength="2" value="%02d"></td></tr>' % (webmin.text['newfax_sendtime'],curtime[3],curtime[4])
+
+    if choose_dialprefix==1 and dialprefix:
+        print '    <tr><td><b>%s</b></td><td>%s &quot;%s&quot; <input type="checkbox" name="dialprefix"'\
+              ' value="yes" checked="checked"></td></tr>' % (webmin.text["newfax_dailprefix"],
+                                                             webmin.text["newfax_useprefix"],cgi.escape(dialprefix))
+    else:
+        dialprefix = cgi.escape(dialprefix)
+        if not dialprefix:
+            dialprefix=webmin.text["newfax_noneprefix"]
+        print '    <tr><td><b>%s</b> </td><td><b>%s</b></td></tr>'  % (webmin.text["newfax_dailprefix"],
+                                                                       cgi.escape(dialprefix))
+    print '    <tr><td><b>%s</b></td><td><input type="text" name="dialstring" size=20 value="%s"></td></tr>' %\
+          (webmin.text['newfax_destination'],cgi.escape(dialstring,1))
+    print '    <tr><td><b>%s</b></td><td><input type=text name="addressee" size=20 value="%s"></td></tr>' %\
+          (webmin.text['index_addressee'],cgi.escape(addressee,1))
+    print '    <tr><td><b>%s</b></td><td><input type=text name="subject" size=80 value="%s"></td></tr>' %\
+           (webmin.text['index_subject'],cgi.escape(subject,1))
     if formActionType.startswith("forward"):    
         if fjobid==None or fqtype==None:
             fjobid=""
             fqtype=""       
         #print '    <input type="hidden" name="formJobFile" value="%s">' % faxfile
         # the jobid/qtype represent the fax file which will be forwarded, not a new jobid/file for the send queue
-        print '    <input type="hidden" name="jobid" value="%s"><input type="hidden" name="qtype" value="%s">' % (fjobid,fqtype)
+        print '    <input type="hidden" name="jobid" value="%s"><input type="hidden" name="qtype" value="%s">' %\
+              (fjobid,fqtype)
     else:
-        print '    <tr><td><b>Faxfile (*.sff,*.ps,*.pdf)</b></td><td><input type="file" name="upfile"></td></tr>'
+        print '    <tr><td><b>%s (*.sff,*.ps,*.pdf)</b></td><td><input type="file" name="upfile"></td></tr>' %\
+              webmin.text['newfax_faxfile']
     print '    <input type="hidden" name="faxcreate" value="%s">' % formActionType
-    print '    <tr><td><input type=SUBMIT value="Send"></td></tr>'
+    print '    <tr><td><input type=SUBMIT value="%s"></td></tr>' % webmin.text['newfax_send']
     print '   </table></form>'
     print ' </td></tr>'
     print '</table>'
@@ -184,6 +215,8 @@ try:
     faxcreate = form.getfirst("faxcreate")    
     if not faxcreate:
         faxcreate = "new"
+    
+    dialprefix_choose = wm_pytools.ExtractIntConfig(webmin.config.get('allow_dialprefix_choose'),0,0,1)
 
     if faxcreate =="forward":
         local_header()
@@ -196,14 +229,14 @@ try:
         formActionType="forwardsend"        
         #if not faxfile:
         #    raise capifaxwm.CSConfigError
-        shownewform(jobid,qtype)
+        shownewform(webmin.remote_user,jobid,qtype,dialprefix_choose)
     elif faxcreate =="new":
         local_header()
         qtype=""
         jobid=""
         faxfile=""
         formActionType="newsend" # TODO just for testing
-        shownewform()
+        shownewform(webmin.remote_user,choose_dialprefix=dialprefix_choose)
     elif faxcreate == "newsend":
         dialstring = form.getfirst("dialstring")    
         subject = form.getfirst("subject")  
@@ -261,7 +294,11 @@ try:
                     rmfile(newpath+tmpjobfile)
                     tmpjobfile ="out_"+tmpjobfile       
 
-            capifaxwm.sendfax(webmin.remote_user,dialstring,newpath+tmpjobfile,timec,addressee,subject)
+            use_dialprefix=1
+            if dialprefix_choose==1:
+                if not form.getfirst("dialprefix")=="yes":
+                    use_dialprefix=None
+            capifaxwm.sendfax(webmin.remote_user,dialstring,newpath+tmpjobfile,timec,addressee,subject,use_dialprefix)
             if rmfile(newpath+tmpjobfile)==-1:
                 raise "Warning","Failed to remove tempory upload file"
             if header_shown==0:
@@ -297,7 +334,12 @@ try:
         if not faxfile:
             raise capifaxwm.CSInternalError("Forward temp file creation/copy failed")
 
-        capifaxwm.sendfax(webmin.remote_user,dialstring,faxfile,timec,addressee,subject)
+        use_dialprefix=1
+        if dialprefix_choose==1:
+            if not form.getfirst("dialprefix")=="yes":
+                use_dialprefix=None
+        
+        capifaxwm.sendfax(webmin.remote_user,dialstring,faxfile,timec,addressee,subject,use_dialprefix)
         if rmfile(faxfile)==-1:
             raise "Warning","Failed to remove tempory upload file"
         if header_shown==0:

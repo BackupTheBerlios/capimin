@@ -18,7 +18,7 @@
 # Uses functions from CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.26 $
+#    version              : $Revision: 1.27 $
 # http://www.capisuite.de
 
 # Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
@@ -55,6 +55,7 @@ else:
           ' type=SUBMIT value="%s"></form>' % webmin.text['index_newfax']
     print '\n<hr>\n'
 
+    # FIXME is remove_gdirs used anywhre?
     remove_gdirs = wm_pytools.ExtractIntConfig(webmin.config.get('remove_gdirs'),0,0,1)
     
     show_lists = webmin.userconfig.get('show_list',[0,1,2,3,4]).split(',',5)
