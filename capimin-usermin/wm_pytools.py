@@ -1,4 +1,3 @@
-# forward a fax: import the data from a queue file and show a form to enter a new destination
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by

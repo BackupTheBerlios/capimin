@@ -4,7 +4,8 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-# http://capimin.berlios.de email: cibi@users.berlios.de
+# see http://capimin.berlios.de for info,install, requirements, etc email: cibi@users.berlios.de
+# Uses the python-webmin module from Peter Åstrand (http://www.cendio.se/~peter/python-webmin)
 
 import sys
 sys.path.append("..")
