@@ -17,7 +17,11 @@ import cs_helpers,cgi, time, fcntl
 
 capifaxwm.SwitchAndLoadConifg()
 
-
+header_shown=0
+def local_header():
+    webmin.header("Capisuite - change job",  config=None, nomodule=1)
+    header_shown=1
+    
 
 
     
@@ -52,11 +56,7 @@ def form_removejob(user,formdata):
 
     capifaxwm.change_job(user,jobid,cslist,dialstring,filetype,jtime,addressee,subject,jtries)
 
-
     
-webmin.header("Capisuitefax - change fax",  config=None, nomodule=1)
-print "<hr>"
-
 try:
     capifaxwm.capiconfig_init()
     # get the "POST" vars
@@ -64,17 +64,22 @@ try:
     user = webmin.remote_user
 
     form_removejob(user,form)
-
-     
+    webmin.redirect()
  
 
 except capifaxwm.CSConfigError:
+    local_header()
     print "<p><b>%s: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
 except capifaxwm.CSInternalError,err:
+    local_header()
     print "<p><b>%s: Inernal error (e.g. function called with wrong params): %s</b></p>" % (webmin.text.get('error','').upper(),err)
 except capifaxwm.CSUserInputError,err:
+    local_header()
     print "<p><b>%s: Invalid Formvalue(s): %s</b></p>" % (webmin.text.get('error','').upper(),err)
 except capifaxwm.CSJobChangeError,err:
+    local_header()
     print "<p><b>%s: Failed to change the job: %s</b></p>" % (webmin.text.get('error','').upper(),err)
-print "<hr>"
-webmin.footer([("", "module index")])
+
+if header_shown==1:
+    print "<hr>"
+    webmin.footer([("", "module index")])
