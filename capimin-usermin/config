@@ -6,3 +6,4 @@ voice_download=0
 remove_ask=1
 allow_faxnext_chown=1
 remove_gdirs=1
+noprefs=0
