@@ -13,8 +13,10 @@
 import sys
 sys.path.append("..")
 sys.stderr = sys.stdout # Send errors to browser
-import webmin
-import cs_helpers,capifaxwm,wm_pytools
+# Includes webmin and capifaxwm
+##from capimin_formlib import * 
+import webmin,capifaxwm
+import cs_helpers,wm_pytools
 import cgi
 
 ask_before_rm=1
@@ -36,13 +38,11 @@ def local_header():
 def show_askform(formjoblist,actionpage="delete.cgi",returnpage="index.cgi"):
     # raise CSInternalError, the checks are and should be done befere this function is called
     # (e.g. to give the user a better error message)
-    if not formjoblist:
+    if not formjoblist or not cslist:
         raise capifaxwm.CSInternalError("show_askform()")
     if not isinstance(formjoblist, list):
         raise capifaxwm.CSInternalError("show_askform()")
-
-    local_header()
-        
+          
     print '<table border="1">'
     print ' <tr bgcolor=#%s><th>&nbsp;&nbsp;&nbsp;Remove (delete/abort) %s job(s) ?&nbsp;&nbsp;&nbsp;</th></tr>  ' % (webmin.tb,len(formjoblist))
     print ' <tr bgcolor=#%s><td>' % webmin.cb
@@ -55,8 +55,6 @@ def show_askform(formjoblist,actionpage="delete.cgi",returnpage="index.cgi"):
     print '   </tr></table></td></tr>\n</table>'
 
 def remove_jobs(formjoblist):    
-    # raise CSInternalError, the checks are and should be done befere this function is called
-    # (e.g. to give the user a better error message)
     if not formjoblist:
         raise capifaxwm.CSInternalError("remove_jobs()")
     if not isinstance(formjoblist, list):
@@ -75,7 +73,7 @@ try:
     # get the cgi data
     formdata = cgi.FieldStorage()
     if not formdata or (not formdata.has_key("cslist")):
-        raise capifaxwm.CSConfigError # might be better to use s.th. else ...
+        raise capifaxwm.CSInternalError("no queue/list information")
     cslist = formdata.getfirst("cslist")
     remove_gdirs = wm_pytools.ExtractIntConfig(webmin.config.get('remove_gdirs'),0,0,1)
 
@@ -99,6 +97,7 @@ try:
     if ask_before_rm==0 or formdata.has_key("rmyes"):
         remove_jobs(formdata.getlist("cjobid"))
     else:
+        local_header()
         show_askform(formdata.getlist("cjobid"))
     
     

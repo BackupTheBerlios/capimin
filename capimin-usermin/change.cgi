@@ -28,63 +28,75 @@ sys.stderr = sys.stdout # Send errors to browser
 # Includes webmin and capifaxwm
 from capimin_formlib import * 
 import cs_helpers,cgi, time, fcntl
+import wm_pytools
 
 
 
 capifaxwm.SwitchAndLoadConifg()
 
-header_shown=0
-def local_header():
-    global header_shown
-    if header_shown==1:
-        return
-    webmin.header("Capisuite - change job (3rd Version)",  config=None, nomodule=1)
-    print "<hr><br>"
-    header_shown=1
-
-
+#from capimin_formlib:
+LocalHeaderSetup("Capisuite - change job (3rd Version)")
    
 try:
-    local_header()
     capifaxwm.capiconfig_init()
     # get the "POST" vars
     form = cgi.FieldStorage()
     user = webmin.remote_user
+    cslist=""
+    if form.has_key("cslist"):
+        cslist=form.getfirst("cslist")
 
     if form.has_key("change") or form.has_key("schange"):
         if not form.has_key("cindex"):
             raise "NoneSelected"        
         FormChangeJob(user,form)
+        if not IsHeaderShown():
+            webmin.redirect()
+    elif form.has_key("delete"):
+        if not form.has_key("cindex"):
+            raise "NoneSelected"  
+        if cslist=="faxdone" and cslist=="faxfailed":
+            raise capifaxwm.CSInternalError("Can't remove jobs/files from global lists with this cgi file")
+        if webmin.userconfig:
+            ask_before_rm = wm_pytools.ExtractIntConfig(webmin.userconfig.get('remove_ask'),1,0,1)
+        if ask_before_rm==0 or form.has_key("rmyes"):            
+            FormRemoveJobs(webmin.remote_user,form)
+            if not IsHeaderShown():
+                webmin.redirect()
+        else:
+            LocalHeader()
+            ShowForm_RemoveAsk(form,"change.cgi")        
+
     else:
         raise capifaxwm.CSInternalError("Unsupport action option")
-#    webmin.redirect()
+
  
 
 except capifaxwm.CSConfigError:
-    local_header()
+    LocalHeader()
     print "<p><b>%s: False settings/config - please start from the main module page<br>"\
           "and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
 except capifaxwm.CSInternalError,err:
-    local_header()
+    LocalHeader()
     print "<p><b>%s: Internal error (e.g. function called with wrong params): %s</b></p>" %\
           (webmin.text.get('error','').upper(),err)
 except capifaxwm.CSRemoveError,e:
-    local_header()
+    LocalHeader()
     print "<p><b>%s: %s</b></p>" %(webmin.text.get('error','').upper(),cgi.escape(e.message,1))
 except "NoAccess":
-    local_header()
+    LocalHeader()
     print "<p><b> Sorry, you don't have the permisson for removing/changing the job<br>"\
           "Ask your (Usermin) Admin about it</b></p>"
 except capifaxwm.CSUserInputError,err:
-    local_header()
+    LocalHeader()
     print "<p><b>%s: Invalid Formvalue(s): %s</b></p>" % (webmin.text.get('error','').upper(),err)
 except capifaxwm.CSJobChangeError,err:
-    local_header()
+    LocalHeader()
     print "<p><b>%s: Failed to change the job: %s</b></p>" % (webmin.text.get('error','').upper(),err)
 except "NoneSelected":
-    local_header()
+    LocalHeader()
     print "<p><b> No job selected</b></p>"
 
-if header_shown==1:
+if IsHeaderShown():
     print "<br><hr>"
     webmin.footer([("", "module index")])

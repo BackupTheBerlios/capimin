@@ -24,6 +24,25 @@ import webmin
 import time, string, cgi
 import capifaxwm
 
+header_shown=None
+header_title=""
+
+def LocalHeaderSetup(title=""):
+    global header_title
+    header_title=title
+def IsHeaderShown():
+    return header_shown
+
+def LocalHeader():
+    global header_shown
+    if header_shown:
+        return
+    webmin.header(header_title,  config=None, nomodule=1)
+    print "<hr><br>"
+    header_shown=1
+
+
+
 
 #capifaxwm.capiconfig_init()
 
@@ -65,7 +84,7 @@ def FormChangeJob(user,formdata):
         (not formdata.has_key("formDialString")) or (not formdata.has_key("formOrgDate")) or \
         (not formdata.has_key("formTries")) or (not formdata.has_key("filetype")) or \
         (not formdata.has_key("cslist")):
-        raise capifaxwm.CSConfigError
+        raise capifaxwm.CSInternalError("FormChangeJob() - Invalid Formdata")
       
     if not isinstance(formdata.getvalue("cjobid"),list):
         __form_change_singlejob(user,formdata)
@@ -82,12 +101,10 @@ def FormChangeJob(user,formdata):
     for job in formjoblist:
         try:
             cindex=int(job)
-            print "<br> cindex %s / %s<br>" % (cindex,alllen)
             if cindex==None or cindex>=alllen or cindex<0:
-                print "overflow"
-                raise capifaxwm.CSConfigError
+                raise capifaxwm.CSInternalError("FormChangeJob() - Invalid Formdata - out of range")
             cjobid = formdata["cjobid"][cindex].value
-            print "<br>"+cjobid
+
             formTime = formdata["year"][cindex].value+"-"+formdata["month"][cindex].value+"-"+\
                        formdata["day"][cindex].value+" "+formdata["hour"][cindex].value+":"+\
                        formdata["min"][cindex].value
@@ -102,7 +119,80 @@ def FormChangeJob(user,formdata):
             capifaxwm.change_job(user,cjobid,cslist,dialstring,filetype,jtime,addressee,subject,jtries)
             
         except:
-            #local_header()
+            LocalHeader()
             print "<br><b>%s:  - JobID: %s</b><br>" %(webmin.text.get('error','').upper(),cjobid)
         
     
+def ShowForm_RemoveAsk(formdata,actionpage,returnpage="index.cgi"):
+    if not formdata:
+        raise capifaxwm.CSInternalError("show_askform() - Invalid Formdata")
+    if (not formdata.has_key("cindex")) or (not formdata.has_key("cjobid")) or (not formdata.has_key("cslist"))\
+    or not actionpage or not formdata:
+        raise capifaxwm.CSInternalError("show_askform()")
+
+    cslist = formdata.getfirst("cslist")
+
+    checkedlist = formdata.getvalue("cindex")
+    if not isinstance(checkedlist, list):
+        checkedlist = [checkedlist] # ;)
+    cjobidlist = formdata.getvalue("cjobid")
+    if not isinstance(cjobidlist, list):
+        cjobidlist = [cjobidlist] # ;)
+
+    job_size=len(cjobidlist)
+    #basic check (more jobs selcted, than in the form....)
+    if job_size<len(checkedlist):
+        raise capifaxwm.CSInternalError("show_askform() - Invalid Formdata")
+        
+    print '<table border="1">' 
+    print ' <tr bgcolor=#%s><th>&nbsp;&nbsp;&nbsp;Remove (delete/abort) %s job(s) ?&nbsp;&nbsp;&nbsp;</th></tr>  ' %\
+              (webmin.tb,len(checkedlist))
+    print ' <tr bgcolor=#%s><td>' % webmin.cb
+    print '   <table cellpadding="10" cellspacing="2" width="100%">\n    <tr>'
+    print ' <td align="center"><form method="POST" action="%s">'\
+          '<input type="submit" value="Yes" name="rmyes">' %  actionpage
+    print ' <input type="hidden" name="delete" value="delete"'
+    newindex=0
+    for chkindex in checkedlist:
+        cindex=int(chkindex)
+        if cindex==None or cindex>=job_size or cindex<0:            
+            raise capifaxwm.CSInternalError("show_askform()")
+        print '     <input type="hidden" name="cjobid" value=%s>' % cjobidlist[cindex]
+        print '     <input type="hidden" name="cindex" value=%s>' % newindex
+        newindex=newindex+1
+    print '     <input type="hidden" name="cslist" value="%s"></form></td>' % cslist
+    print ' <td align="center"><form method="POST" action="%s">'\
+          '<input type="submit" value="No" name="rmno"></form></td>' % returnpage
+    print '   </tr></table></td></tr>\n</table>'
+
+def FormRemoveJobs(user,formdata):
+    if not formdata:
+        raise capifaxwm.CSInternalError("FormRemoveJobs() - Invalid Formdata")
+    if (not formdata.has_key("cindex")) or (not formdata.has_key("cjobid")) or (not formdata.has_key("cslist")):
+        raise capifaxwm.CSInternalError("FormRemoveJobs() - Invalid Formdata")
+
+    cslist = formdata.getfirst("cslist")
+
+    checkedlist = formdata.getvalue("cindex")
+    if not isinstance(checkedlist, list):
+        checkedlist = [checkedlist] # ;)
+    cjobidlist = formdata.getvalue("cjobid")
+    if not isinstance(cjobidlist, list):
+        cjobidlist = [cjobidlist] # ;)
+
+    job_size=len(cjobidlist)
+    #basic check (more jobs selcted, than in the form....)
+    if job_size<len(checkedlist):
+        raise capifaxwm.CSInternalError("FormRemoveJobs()")
+    cjobid=None
+    for chkindex in checkedlist:
+        try:
+            cindex=int(chkindex)
+            if cindex==None or cindex>=job_size or cindex<0:            
+                raise capifaxwm.CSInternalError("FormRemoveJobs()")
+            cjobid=cjobidlist[cindex]
+            capifaxwm.removejob(user,cjobid,cslist)    
+        except capifaxwm.CSRemoveError,e:
+            LocalHeader()
+            print "<br><b>%s: %s - JobID: %s </b><br>" %(webmin.text.get('error','').upper(),cgi.escape(e.message,1),cjobid)
+  
