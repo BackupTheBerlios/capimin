@@ -18,7 +18,7 @@
 # Uses functions from CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.21 $
+#    version              : $Revision: 1.22 $
 # http://www.capisuite.de
 
 # Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
@@ -38,7 +38,7 @@ import cs_helpers,capifaxwm,capimin_lists,wm_pytools
 capifaxwm.SwitchAndLoadConifg()
 
 
-webmin.header(webmin.text['index_title'], None, "intro",capifaxwm._showconfig,1)
+webmin.header(webmin.text['index_title'],image=None,help="intro",config=1,nomodule=1)
 
 sys.stdout.flush()
 
@@ -56,14 +56,8 @@ else:
     print '\n<hr>\n'
 
     remove_gdirs = wm_pytools.ExtractIntConfig(webmin.config.get('remove_gdirs'),0,0,1)
-    gremovepage=None
-    #if remove_gdirs == 1:
-    #    gremovepage="abort.cgi"
     
-    if not capifaxwm._OldWebminpy and webmin.userconfig:
-        show_lists = webmin.userconfig.get('show_list',[0,1,2,3,4]).split(',',5)
-    else:
-        show_lists = [0,1,2,3,4]
+    show_lists = webmin.userconfig.get('show_list',[0,1,2,3,4]).split(',',5)
 
     for ls in show_lists:
         l=int(ls)

@@ -17,7 +17,7 @@
 # Uses functions from CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.23 $
+#    version              : $Revision: 1.24 $
 # http://www.capisuite.de
 
 # Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
@@ -56,7 +56,7 @@ def SwitchAndLoadConifg():
     try:    
         webmin.switch_to_remote_user()
         webmin.create_user_config_dirs()
-        showconfig=1
+        _showconfig=1
     except NotImplementedError:
         _OldWebminpy=1
         _showconfig=None

@@ -42,7 +42,7 @@ def local_header():
     global header_shown
     if header_shown==1:
         return
-    webmin.header("Capisuite -  - create/forward/answer fax",  config=None, nomodule=1)
+    webmin.header("Capisuite -  create/forward/answer fax",  config=None, nomodule=1)
     print "<hr><br>"
     header_shown=1
 
