@@ -49,11 +49,11 @@ if not capifaxwm._OldWebminpy and webmin.userconfig:
     soxvolume = str(wm_pytools.ExtractFloatConfig(webmin.userconfig.get('sox_volume'),soxvolume,0))
     intfaxformat = wm_pytools.ExtractIntConfig(webmin.userconfig.get('fax_download'),0,0,3)
     intcfaxformat = wm_pytools.ExtractIntConfig(webmin.userconfig.get('cfax_download'),0,0,2)
-    intvoiceformat = wm_pytools.ExtractIntConfig(webmin.userconfig.get('voice_download'),0,0,1)
+    intvoiceformat = wm_pytools.ExtractIntConfig(webmin.userconfig.get('voice_download'),0,0,2)
 
 faxformat=['sff','tif','ps','pdf'][intfaxformat]
 cfaxformat=['cff','ps','pdf'][intcfaxformat]
-voiceformat=['wav','la'][intvoiceformat]
+voiceformat=['wav','la','ogg'][intvoiceformat]
 
 try:
     form = cgi.FieldStorage()
@@ -72,7 +72,7 @@ try:
         isVoice=1
     if capifaxwm.checkconfig(isVoice)==-1:
         raise capifaxwm.CSConfigError
-
+    
     if qtype=="faxreceived":
         qpath=os.path.join(capifaxwm.UsersFax_Path,webmin.remote_user,"received")+os.sep
         jobfile="fax-"+jobid+".txt"
@@ -83,6 +83,8 @@ try:
         fileext=voiceformat
         if fileext=="wav":
             contenttype="audio/x-wav"
+        elif fileext=="ogg":
+            contenttype="application/ogg"
     else:
         raise capifaxwm.CSConfigError
     control=cs_helpers.readConfig(qpath+jobfile)
@@ -100,8 +102,11 @@ try:
         fileext=cfaxformat
         colorfax=1
     basename=datafilename[:datafilename.rindex('.')+1]
-    if fileext=="wav":
-        capifaxwm.ConvertAudio2Sox(datafilename,basename+fileext,soxvolume)
+    if fileext=="wav" or fileext=="ogg":
+        rate=None
+        if fileext=="ogg":
+            rate=32000
+        capifaxwm.ConvertAudio2Sox(datafilename,basename+fileext,soxvolume,rate)
         datafilename = basename+fileext
     elif (not colorfax) and (fileext=="tif" or fileext=="ps" or fileext=="pdf"):
         capifaxwm.ConvertSFF(datafilename,basename+fileext,fileext)
@@ -118,7 +123,7 @@ try:
     sys.stdout.write('Content-Length: '+str(len(datafile))+'\r\n')
     sys.stdout.write('\r\n')
     sys.stdout.write(datafile)
-    if fileext=="wav" or fileext=="tif" or fileext=="ps" or fileext=="pdf":
+    if fileext=="wav" or fileext=="tif" or fileext=="ps" or fileext=="pdf" or fileext=="ogg":
         os.remove(datafilename)
 
 except capifaxwm.CSConvError, e:

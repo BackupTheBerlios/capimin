@@ -3,5 +3,5 @@ category=
 desc=Capisuite
 longdesc=Manage Capisuite fax queue
 depends=1.0
-version=0.1.0b
+version=0.1.0b2
 usermin=1

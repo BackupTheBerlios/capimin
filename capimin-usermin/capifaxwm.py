@@ -502,7 +502,7 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
     
 
 
-def ConvertAudio2Sox(lafile,wavfile,volume=1.0):
+def ConvertAudio2Sox(lafile,wavfile,volume=1.0,rate=None):
     """ Based on sendMIMEMail(...) from capisuite's cs_helpers.py
         convert a la voice/audio file to a standard wav file
     """
@@ -511,11 +511,14 @@ def ConvertAudio2Sox(lafile,wavfile,volume=1.0):
    
     #la -> wav
     # don't use stdout as sox needs a file to be able to seek in it otherwise the header will be incomplete
-    ret = os.spawnlp(os.P_WAIT,"sox","sox","-v",volume,lafile,"-w",wavfile)
+    if not rate:
+        ret = os.spawnlp(os.P_WAIT,"sox","sox","-v",volume,lafile,"-w",wavfile)
+    else:
+        ret = os.spawnlp(os.P_WAIT,"sox","sox","-v",volume,lafile,"-w","-r",str(rate),wavfile)
 
     if (ret or not os.access(wavfile,os.R_OK)):
-        raise CSConvError("Error while calling sox. File damaged or sox not installed?")
-
+        raise CSConvError("Error while calling sox. File damaged / sox not installed or sox doesn't support the format?" )
+        
 
 def ConvertSFF(sfffile,destfile,desttype="pdf"):
     """ Based on sendMIMEMail(...) from capisuite's cs_helpers.py

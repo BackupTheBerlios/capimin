@@ -5,5 +5,5 @@ remove_ask=Ask before removing a job?,1,1-yes,0-no
 line1=Download,11
 fax_download=Fax file format,1,0-SFF fax file,1-TIF images,2-Postscript,3-PDF
 cfax_download=Color fax format,1,0-CFF fax file,1-Postscript,2-PDF
-voice_download=Audio/voice format,1,0-wav,1-la
+voice_download=Audio/voice format,1,0-wav,1-la,2-ogg
 sox_volume=Volume multiplier for wav-files  (see man sox),0

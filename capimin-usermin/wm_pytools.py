@@ -16,8 +16,8 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #
-# Coding style: Max linewidth 120 chars
-# 
+# Coding style: Max linewidth 120 chars, 4 spaces per tab 
+#
 
 import string
 

@@ -5,5 +5,5 @@ remove_ask=Nachfragen vor dem Löschen?,1,1-ja,0-nein
 line1=Download,11
 fax_download=Format f&uuml;r Faxdateien,1,0-SFF Faxdatei,1-TIF Bild,2-Postscript,3-PDF
 cfax_download=Farbfax format,1,0-CFF Faxdatei,1-Postscript,2-PDF
-voice_download=Audio/Sprachformat,1,0-wav,1-la
+voice_download=Audio/Sprachformat,1,0-wav,1-la,2-ogg
 sox_volume=Laustärken Multiplikator f&uuml;r wav-Dateien (s.h.  man sox),0
