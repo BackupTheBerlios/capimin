@@ -385,8 +385,13 @@ def ChangeJob(user,jobid,cslist,dialstring=None,starttime=None,addressee=None,su
 
     if dialstring==None:
         dialstring=control.get("GLOBAL","dialstring")
+        if not dialstring:
+            raise CSGeneralError("Dialstring (destination numbe) imported from jobfile was empty or invalid")
     else:
-        dialstring=ConvertDialString(dialstring)       
+        dialstring=ConvertDialString(dialstring)
+        if not dialstring:
+            raise CSUserInputError("Invalid dailstring (invalid destination number)")
+
     if starttime==None:
         starttime=control.get("GLOBAL","starttime")
     if addressee==None:

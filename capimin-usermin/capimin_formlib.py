@@ -89,7 +89,7 @@ def FormChangeJob(user,formdata,timediff=None,sendnow=None):
     if (not formdata) or (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0):
         raise capifaxwm.CSConfigError
     if (not formdata.has_key("cindex")) or (not formdata.has_key("cjobid")) or \
-        (not formdata.has_key("cslist")):
+        (not formdata.has_key("cslist")) or (not formdata.has_key("formDialString_0")):
         raise capifaxwm.CSInternalError("FormChangeJob() - Invalid Formdata")
       
     if not isinstance(formdata.getvalue("cjobid"),list):
@@ -109,7 +109,11 @@ def FormChangeJob(user,formdata,timediff=None,sendnow=None):
             cindex=int(job)
             if cindex==None or cindex>=alllen or cindex<0:
                 raise capifaxwm.CSInternalError("FormChangeJob() - Invalid Formdata - out of range")
-            cjobid = formdata["cjobid"][cindex].value           
+            cjobid = formdata["cjobid"][cindex].value
+
+            dialstring=formdata.getfirst("formDialString_"+str(cindex))
+            if not dialstring:
+                raise capifaxwm.CSUserInputError("no dialstring")
 
             if not sendnow:
                 year=""
@@ -149,7 +153,7 @@ def FormChangeJob(user,formdata,timediff=None,sendnow=None):
             if formdata.has_key("formDialAddressee_"+str(cindex)):
                 addressee = formdata["formDialAddressee_"+str(cindex)].value
    
-            capifaxwm.ChangeJob(user,cjobid,cslist,None,jtime,addressee,subject)
+            capifaxwm.ChangeJob(user,cjobid,cslist,dialstring,jtime,addressee,subject)
         except capifaxwm.CSInternalError,err:
             LocalHeader()
             print "<p><b>%s: Internal error (e.g. function called with wrong params): %s - Job ID: %s</b></p>" %\

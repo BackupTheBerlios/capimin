@@ -23,7 +23,7 @@
 import webmin
 import os, re, time, string
 import cs_helpers, capifaxwm
-import urllib
+import urllib,cgi
 import numsort
 
 capifaxwm.capiconfig_init()
@@ -74,9 +74,12 @@ def ShowSend3(user,changepage="change.cgi",formname=""):
         print ' <tr bgcolor=#%s>' % webmin.cb
         print '   <td><input type=checkbox name="cindex" value="%s"></td>' % cindex
         print "   <td>&nbsp;%s</td>" % jobid
-        print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","dialstring")
+        #print "   <td>&nbsp;%s</td>" % cgi.escape(control.get("GLOBAL","dialstring"),1)
+        print '   <td><input type="text" name="formDialString_%s" size="15" maxlength="40" value="%s"></td>' %\
+                              (cindex,cgi.escape(cs_helpers.getOption(control,"GLOBAL","dialstring",""),1))
+
         print '   <td><input TYPE="TEXT" NAME="formDialAddressee_%s" SIZE="15" MAXLENGTH="40" value="%s"></td>' %\
-                              (cindex,cs_helpers.getOption(control,"GLOBAL","addressee",""))
+                              (cindex,cgi.escape(cs_helpers.getOption(control,"GLOBAL","addressee",""),1))
         print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","tries")
     
         print '   <td nowrap><input name="year_%s" type="text" size="4" maxlength="4" value="%s">-<select'\
@@ -91,7 +94,7 @@ def ShowSend3(user,changepage="change.cgi",formname=""):
               ' size="2" maxlength="2" value="%02d"></td>' % (cindex,starttime[3],cindex,starttime[4])
   
         print '   <td><input type="TEXT" name="formSubject_%s" SIZE="30" MAXLENGTH="40" value="%s"></td>' %\
-                      (cindex,cs_helpers.getOption(control,"GLOBAL","subject",""))
+                      (cindex,cgi.escape(cs_helpers.getOption(control,"GLOBAL","subject",""),1))
 
         print '   <input type="hidden" name="cjobid" value="%s">' % jobid
         #print '   <td><input type=submit name="schange" value="%s"></td>' % webmin.text['index_change']
@@ -250,11 +253,11 @@ def ShowGlobal(user,cslist="faxdone",newpage="",dldpage="",removepage="",formnam
             print '   <td><input type=checkbox name="cjobid" value=%s></td>' % jobid
         print "   <td>&nbsp;%s</td>" % jobid
         print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","dialstring")
-        print '   <td>&nbsp;%s</td>' % cs_helpers.getOption(control,"GLOBAL","addressee","")
+        print '   <td>&nbsp;%s</td>' % cgi.escape(cs_helpers.getOption(control,"GLOBAL","addressee",""),1)
         print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","tries")
         print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","starttime")
 
-        print '   <td>&nbsp;%s</td>' % cs_helpers.getOption(control,"GLOBAL","subject","")
+        print '   <td>&nbsp;%s</td>' % cgi.escape(cs_helpers.getOption(control,"GLOBAL","subject",""),1)
     print "</table>"
     print '<input type="hidden" name="cslist" value="%s">' % cslist
 
