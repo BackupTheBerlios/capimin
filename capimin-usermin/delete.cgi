@@ -33,36 +33,36 @@ def local_header():
     header_shown=1
 
 
-def show_askform(fromjoblist):
+def show_askform(formjoblist):
     # raise CSInternalError, the checks are and should be done befere this function is called
     # (e.g. to give the user a better error message)
-    if not fromjoblist:
+    if not formjoblist:
         raise capifaxwm.CSInternalError("show_askform()")
-    if not isinstance(fromjoblist, list):
+    if not isinstance(formjoblist, list):
         raise capifaxwm.CSInternalError("show_askform()")
 
     local_header()
         
     print '<table border="1">'
-    print ' <tr bgcolor=#%s><th>&nbsp;&nbsp;&nbsp;Remove (delete/abort) %s job(s) ?&nbsp;&nbsp;&nbsp;</th></tr>  ' % (webmin.tb,len(fromjoblist))
+    print ' <tr bgcolor=#%s><th>&nbsp;&nbsp;&nbsp;Remove (delete/abort) %s job(s) ?&nbsp;&nbsp;&nbsp;</th></tr>  ' % (webmin.tb,len(formjoblist))
     print ' <tr bgcolor=#%s><td>' % webmin.cb
     print '   <table cellpadding="10" cellspacing="2" width="100%">\n    <tr>'
     print ' <td align="center"><form method="POST" action="delete.cgi"><input type="submit" value="Yes" name="rmyes">'
-    for cjob in fromjoblist:
+    for cjob in formjoblist:
         print '     <input type="hidden" name="cjobid" value=%s>' % cjob
     print '     <input type="hidden" name="cslist" value="%s"></form></td>' % cslist
     print ' <td align="center"><form method="POST" action="index.cgi"><input type="submit" value="No" name="rmno"></form></td>'
     print '   </tr></table></td></tr>\n</table>'
 
-def remove_jobs(fromjoblist):    
+def remove_jobs(formjoblist):    
     # raise CSInternalError, the checks are and should be done befere this function is called
     # (e.g. to give the user a better error message)
-    if not fromjoblist:
+    if not formjoblist:
         raise capifaxwm.CSInternalError("remove_jobs()")
-    if not isinstance(fromjoblist, list):
-        fromjoblist = [fromjoblist] # ;)
+    if not isinstance(formjoblist, list):
+        formjoblist = [formjoblist] # ;)
 
-    for cjob in fromjoblist:
+    for cjob in formjoblist:
         try:
             capifaxwm.removejob(webmin.remote_user,cjob,cslist)    
         except capifaxwm.CSRemoveError,e:

@@ -41,7 +41,7 @@ def FormTimeToCSTime(formtime):
         raise capifaxwm.CSUserInputError("Invalid time and/or date from Formdata")
     return cstime
     
-def form_removejob(user,formdata):
+def form_changejob(user,formdata):
     if (not form) or (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0):
         raise capifaxwm.CSConfigError
     formTime = formdata.getfirst("year","")+"-"+formdata.getfirst("month","")+"-"+formdata.getfirst("day","")+" "+\
@@ -66,7 +66,7 @@ try:
     form = cgi.FieldStorage()
     user = webmin.remote_user
 
-    form_removejob(user,form)
+    form_changejob(user,form)
     webmin.redirect()
  
 
