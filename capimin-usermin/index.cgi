@@ -32,8 +32,29 @@
 import sys
 sys.path.append("..")
 sys.stderr = sys.stdout # Send errors to browser
-import webmin
-import cs_helpers,capifaxwm,capimin_lists,wm_pytools
+
+def abort_error(errmsg):
+    print "Content-type: text/html\n"
+    sys.stdout.flush()
+    print "<html><head><title>Error starting capimin module</title></head><body><p><b> %s</b></p></body></html>" % errmsg
+    sys.exit()
+    
+
+try:
+    import webmin
+except:
+    abort_error("Error, couldn't load Webmin-Python module, not installed?<br>See the capimin website for install instructions")
+    
+try:
+    import cs_helpers
+except:
+    abort_error("Error, couldn't load cs_helper module. This is a module provided by CapiSuite")
+
+try:
+    import capifaxwm,capimin_lists,wm_pytools
+except:
+    abort_error("Error, couldn't load capmin modules. capimin wasn't installed correct")
+
 
 capifaxwm.SwitchAndLoadConifg()
 
