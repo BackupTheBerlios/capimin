@@ -19,9 +19,12 @@ capifaxwm.SwitchAndLoadConifg()
 
 header_shown=0
 def local_header():
+    global header_shown
+    if header_shown==1:
+        return
     webmin.header("Capisuite - change job",  config=None, nomodule=1)
+    print "<hr><br>"
     header_shown=1
-    
 
 
     
