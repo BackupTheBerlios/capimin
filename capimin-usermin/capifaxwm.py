@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.9 $
+#    version              : $Revision: 1.10 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -168,12 +168,12 @@ def removejob(user,jobid,cslist):
     
     # in capisuite 0.4.3, the filename options in failed and done store the original file path
     # (e.g. /var/spool/capisuite/users/me/senq/fax-12.sff).
-    if cslist!="faxdone" and cslist!="faxfailed":
-	datafile=control.get("GLOBAL","filename")
-    else:
-	# color fax:
+    datafile=control.get("GLOBAL","filename")
+    if cslist=="faxdone" or cslist=="faxfailed":
+	# color fax check:
 	fileext="sff"
-        if os.path.splitext(datafilename)[1].lower()==".cff":
+        #if os.path.splitext(datafile)[1].lower()==".cff":
+	if datafile.endswith("cff"):
 	    fileext="cff"
 	datafile=qpath+job[:-3]+fileext
     if not datafile:
@@ -225,6 +225,11 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
 	print "<p><b> Sorry, your are not allowed to send a fax</b></p>"
 	return -1
     
+    filetype = os.path.splitext(sourcefile)[1].lower()[1:] # splittext always returns a list of 2, so no "None" check needed
+    if not filetype:
+	print "<p><b> Invalid input (fax) file </b></p>"
+	raise CSConfigError
+    
     # Convert to empty string, if set to "None"
     if addressee==None: addressee=""
     if subject==None: subject=""
@@ -242,7 +247,7 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
 	print "<p><b>ERROR: cannot read fax source file:%</b></p>" % faxfile
 	return -1
     sendq = os.path.join(UsersFax_Path,user,"sendq")+"/"
-    newname=cs_helpers.uniqueName(sendq,"fax","sff")
+    newname=cs_helpers.uniqueName(sendq,"fax",filetype)
     
     # --TODO--Error check!!!!
     shutil.copy(sourcefile,newname)
@@ -267,24 +272,22 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
 
 
 def ConvertAudio2Sox(lafile,wavfile,volume=1.0):
-    if not ulawfile or not wavfile:
-	return "conv-error","False parameter (no in and/or outputfile)"
+    if not lafile or not wavfile:
+        raise CSConvError("False parameter (no in and/or outputfile)")
 	    
     #la -> wav
     # don't use stdout as sox needs a file to be able to seek in it otherwise the header will be incomplete
     ret = os.spawnlp(os.P_WAIT,"sox","sox","-v",volume,lafile,wavfile)
 	
     if (ret or not os.access(wavfile,os.R_OK)):
-	raise "conv-error","Error while calling sox. File damaged or sox not installed?"
-
-
+	raise CSConvError("Error while calling sox. File damaged or sox not installed?")
 
 
 def ConvertSFF(sfffile,destfile,desttype="pdf"):
     if not sfffile or not destfile or not desttype:
-	raise "conv-error","False parameter (no in and/or outputfile)"
+	raise CSConvError("False parameter (no in and/or outputfile)")
     if desttype!="pdf" and desttype!="ps" and desttype!="tif":
-	raise "conv-error","False parameter (no in and/or outputfile)"
+	raise CSConvError("False parameter (no in and/or outputfile)")
     
     # sff -> tif
     if desttype=="tif":
@@ -293,7 +296,7 @@ def ConvertSFF(sfffile,destfile,desttype="pdf"):
 	outfile=destfile+".tif"
     ret=os.spawnlp(os.P_WAIT,"sfftobmp","sfftobmp","-tif",sfffile,outfile)
     if (ret or not os.access(outfile,os.F_OK)):
-	raise "conv-error","Can't convert sff to tif. sfftobmp not installed?"
+	CSConvError("Can't convert sff to tif. sfftobmp not installed?")
     if desttype=="tif":
 	return
     
@@ -305,7 +308,7 @@ def ConvertSFF(sfffile,destfile,desttype="pdf"):
 	outfile=destfile+".ps"
     ret=os.spawnlp(os.P_WAIT,"tiff2ps","tiff2ps","-a",infile,"-O",outfile)
     if (ret or not os.access(outfile,os.F_OK)):
-	raise "conv-error","Can't convert tif to ps (tif file is created from sff). tiff2ps not installed?"
+	raise CSConvError("Can't convert tif to ps (tif file is created from sff). tiff2ps not installed?")
     remtempfailed=[]
     try:
         os.remove(infile)
@@ -318,18 +321,17 @@ def ConvertSFF(sfffile,destfile,desttype="pdf"):
     infile=outfile
     ret=os.spawnlp(os.P_WAIT,"ps2pdf","ps2pdf",infile,destfile)
     if (ret or not os.access(destfile,os.F_OK)):
-	raise "conv-error","Can't convert ps to pdf (ps created from sff -> tif -> ps ). ps2pdf not installed?"
+	raise CSConvError("Can't convert ps to pdf (ps created from sff -> tif -> ps ). ps2pdf not installed?")
     try:
         os.remove(infile)
     except:
 	remtempfailed.append(infile)
     return remtempfailed
-    
  
 def ConvertCFF2PDF(cfffile,pdffile):
     raise NotImplementedError
     if not cfffile or not pdffile:
-	return "conv-error","False parameter (no in and/or outputfile)"
+	raise CSConvError("False parameter (no in and/or outputfile)")
 
 
 
@@ -348,3 +350,10 @@ class CSConfigError(Exception):
     pass
 class FormInputError(Exception):
     pass
+# added because Python (2.2.1) or at least my code, doesn't catch the string exception type ("conv-error","messgae")
+# when the exception is handled in another module
+class CSConvError(Exception):
+    def __init__(self, value):
+	self.value = value
+    def __str__(self):
+	return repr(self.value)

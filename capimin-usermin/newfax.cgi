@@ -59,10 +59,15 @@ def importqfax(jobid,qtype):
 	raise capifaxwm.CSConfigError
 	
     jobbinfile = control.get("GLOBAL","filename")
+    if jobbinfile==None: jobbinfile="" # to avoid exception with splittext, check done below with filetypedot
+    filetypedot = os.path.splitext(jobbinfile)[1].lower() # splittext always returns a list of 2, so no "None" check needed     
+    if not filetypedot:
+	print "<p><b> Error in jobfile: no data/invalid filename found (jobid: %s )</b></p>" % jobid
+	raise capifaxwm.CSConfigError
 
     # Security note: if you use python 2.3, change to tempfile.mkstemp
-    # in python version earlier 2.3, mktemp hasn't the option to specify a directory 
-    tmpjobfile = os.path.basename(tempfile.mktemp(".tempfax.sff")) 
+    # in python version earlier than 2.3, mktemp hasn't the option to specify a directory 
+    tmpjobfile = os.path.basename(tempfile.mktemp(".tempfax"+filetypedot)) 
     newpath=os.path.join(capifaxwm.UsersFax_Path,webmin.remote_user,"sendq")+os.sep
     if not tmpjobfile or not newpath or not jobbinfile :	
 	raise capifaxwm.CSConfigError
@@ -138,7 +143,7 @@ try:
 
     if faxcreate =="forward":
 	qtype=form.getfirst("qtype")
-	jobid = form.getfirst("formfaxid")
+	jobid = form.getfirst("jobid")
 	# faxfile = importqfax(jobid,qtype) ## now done after the form is send
 	faxfile=""
 	formActionType="forwardsend"
@@ -206,8 +211,8 @@ try:
             raise capifaxwm.FormInputError
 
 	try:
-	    formTime = form.getfirst("year")+"-"+form.getfirst("month")+"-"+form.getfirst("day")+" "+\
-		form.getfirst("hour")+":"+form.getfirst("min")	
+	    formTime = form.getfirst("year","")+"-"+form.getfirst("month","")+"-"+form.getfirst("day","")+" "+\
+		form.getfirst("hour","")+":"+form.getfirst("min","")	
 	    timestruct = time.strptime(formTime,"%Y-%m-%d %H:%M")
 	    timec = time.asctime(timestruct)
 	except:
@@ -238,7 +243,7 @@ try:
 
 
 except capifaxwm.CSConfigError:
-    print "<p><b>ERROR: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>"
+    print "<p><b>%s: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
 except capifaxwm.FormInputError:
     shownewform(fjobid,fqtype)
 print "<hr>"

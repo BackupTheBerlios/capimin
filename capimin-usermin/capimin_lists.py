@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.3 $
+#    version              : $Revision: 1.4 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,11 +16,12 @@
 import webmin
 import os, re, time, string
 import cs_helpers, capifaxwm
+import urllib
 
 capifaxwm.capiconfig_init()
 
 
-def ShowSend(user,changepage="change.cgi",abortpage="abort.cgi"):    
+def ShowSend(user,changepage="change.cgi",newpage="",dldpage="",removepage="abort.cgi"):    
     if (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0):
 	raise capifaxwm.CSConfigError
 	
@@ -36,11 +37,20 @@ def ShowSend(user,changepage="change.cgi",abortpage="abort.cgi"):
 
     for job in files:
 	control=cs_helpers.readConfig(sendq+job)
-	faxid = re.match("fax-([0-9]+)\.txt",job).group(1)
+	jobid = re.match("fax-([0-9]+)\.txt",job).group(1)
 	starttime=(time.strptime(control.get("GLOBAL","starttime")))[0:8]+(-1,)
+	# the filetype detections is done, because change.cgi does (currently) not reread the jobfile
+	# (it wasn't needed, but since there can be color files...).
+	datafile = control.get("GLOBAL","filename")
+	if datafile==None: datafile="" # to avoid exception with splittext, check done below with filetype
+	filetype = os.path.splitext(datafile)[1].lower()[1:] # splittext always returns a list of 2, so no "None" check needed
+	if not filetype:	
+	    print "<p><b> %s: No or invalid job data-filename found int job %s </b></p>" % (webmin.text.get('error','').upper(),jobid)
+	    raise capifaxwm.CSConfigError
+	
 
 	print ' <tr bgcolor=#%s>\n  <form METHOD="POST" ACTION="%s">' % (webmin.cb,changepage)	
-        print "   <td>&nbsp;%s</td>" % faxid
+        print "   <td>&nbsp;%s</td>" % jobid
 	print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","dialstring")
 	print '   <td><input TYPE="TEXT" NAME="formDialAddressee" SIZE="15" MAXLENGTH="40" value="%s"></td>' % cs_helpers.getOption(control,"GLOBAL","addressee","")
 	print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","tries")
@@ -57,14 +67,14 @@ def ShowSend(user,changepage="change.cgi",abortpage="abort.cgi"):
 	#print '       <input TYPE="TEXT" NAME="date" SIZE="10" MAXLENGTH="16" value="'+time2+'"></td>'
 	
 	print '   <td><input TYPE="TEXT" NAME="formSubject" SIZE="30" MAXLENGTH="40" value="%s"></td>' % cs_helpers.getOption(control,"GLOBAL","subject","")
-	print '   <input type="hidden" name="formFaxID" value="%s">' % faxid
+	print '   <input type="hidden" name="jobid" value="%s">' % jobid
 	print '   <input type="hidden" name="formDialString" value="%s">' % control.get("GLOBAL","dialstring")
 	print '   <input type="hidden" name="formTries" value="%s">' % control.get("GLOBAL","tries")
 	print '   <input type="hidden" name="formOrgDate" value="%s">' % control.get("GLOBAL","starttime")
+	print '   <input type="hidden" name="filetype" value="%s">' % filetype
 	print '   <td><input TYPE="SUBMIT" VALUE="%s"></td>\n  </form>' % webmin.text['index_change']
-	print '   <td>&nbsp;&nbsp;<i><a href="%s?jobid=%s">%s</a></i></td>' % (abortpage,faxid,webmin.text['index_toabort'])
-#	print '  <form ACTION="%s"><input type="hidden" name="jobid" value="%s">' % (abortpage,faxid)
-#	print '   <td><input TYPE="SUBMIT" VALUE="%s"></td>\n  </form>' % webmin.text['index_toabort']
+	urlparams = urllib.urlencode({'jobid': jobid, 'qtype': 'faxsend'})
+	print '   <td>&nbsp;&nbsp;<i><a href="%s?%s">%s</a></i></td>' % (removepage,urlparams,webmin.text['index_toabort'])
 	print ' </tr>'
 
 
@@ -92,7 +102,7 @@ def ShowReceived(user,fileprefix="fax",forwardopt=0,newpage="newfax.cgi",dldpage
     path=os.path.join(path,user,"received")+"/"
     print '<table border="1">\n <tr bgcolor=#%s>' % webmin.tb
     print '   <th>%s</th><th>From</th><th>To (MSN)</th><th>Time</th><th>ISDN cause</th><th>File</th>' %  (webmin.text['index_id'])
-    if forwardopt==1:
+    if forwardopt==1 and newpage:
 	print '   <th>&nbsp;</td>'
     if removepage:
 	print '   <th>&nbsp;</td>'
@@ -115,25 +125,23 @@ def ShowReceived(user,fileprefix="fax",forwardopt=0,newpage="newfax.cgi",dldpage
 	print "  <td>&nbsp;%s</td>" % control.get("GLOBAL","cause")
 
 	if forwardopt==1:
-	    print '  <form METHOD="POST" ACTION="%s"><input type="hidden" name="formfaxid" value="%s"><input type="hidden" name="qtype" value="faxreceived">\
+	    print '  <form METHOD="POST" ACTION="%s"><input type="hidden" name="jobid" value="%s"><input type="hidden" name="qtype" value="faxreceived">\
 <input type="hidden" name="faxcreate" value="forward"><td><input TYPE="SUBMIT" VALUE="%s"></td></form>' % (newpage,jobid,webmin.text['index_forward'])
 
 	if dldpage:
-#	    print '  <form METHOD="POST" ACTION="%s"><input type="hidden" name="jobid" value="%s">' % (dldpage,jobid)
-#	    print '   <input type="hidden" name="qtype" value="%s"><td><input TYPE="SUBMIT" VALUE="%s"></td></form>' % (qtype,webmin.text['index_download'])
-	    print '   <td><b><a href="%s?jobid=%s&qtype=%s">%s</a></b></td>' % (dldpage,jobid,qtype,webmin.text['index_download'])
+	    urlparams = urllib.urlencode({'jobid': jobid, 'qtype': qtype})
+	    print '   <td><b><a href="%s?%s">%s</a></b></td>' % (dldpage,urlparams,webmin.text['index_download'])
 	else:
 	    print "  <td>&nbsp;%s</td>" % control.get("GLOBAL","filename") # TODO?:change it to file name only
 
 	if removepage:
-#	    print '   <form ACTION="%s"><input type="hidden" name="jobid" value="%s"><input type="hidden" name="qtype" value="%s">' % (removepage,jobid,qtype)
-#	    print '    <td><input TYPE="SUBMIT" VALUE="%s"></td></form>' % webmin.text['delete']
-	    print '   <td>&nbsp;&nbsp;<i><a href="%s?jobid=%s&qtype=%s">%s</a></i></td>' % (removepage,jobid,qtype,webmin.text['delete'])
+	    urlparams = urllib.urlencode({'jobid': jobid, 'qtype': qtype}) 
+	    print '   <td>&nbsp;&nbsp;<i><a href="%s?%s">%s</a></i></td>' % (removepage,urlparams,webmin.text['delete'])
 	print "</tr>"
     print "</table>"
 
 # Show Done/Failed dir for the current user
-def ShowGlobal(user,cslist="faxdone",removepage=""):
+def ShowGlobal(user,cslist="faxdone",newpage="",dldpage="",removepage=""):
     if (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0):
         raise capifaxwm.CSConfigError
     
@@ -173,7 +181,8 @@ def ShowGlobal(user,cslist="faxdone",removepage=""):
 	
 	print '   <td>&nbsp;%s</td>' % cs_helpers.getOption(control,"GLOBAL","subject","")
 	if removepage:
-	    print '   <td>&nbsp;&nbsp;<i><a href="%s?jobid=%s&qtype=%s"">%s</a></i></td>' % (removepage,jobid,cslist,webmin.text['delete'])
+	    urlparams = urllib.urlencode({'jobid': jobid, 'qtype': cslist})
+	    print '   <td>&nbsp;&nbsp;<i><a href="%s?%s">%s</a></i></td>' % (removepage,urlparams,webmin.text['delete'])
 	print ' </tr>'
 
 

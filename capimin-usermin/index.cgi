@@ -11,8 +11,7 @@ import sys
 sys.path.append("..")
 sys.stderr = sys.stdout # Send errors to browser
 import webmin
-import capifaxwm,capimin_lists
-import cs_helpers,os, re,getopt
+import cs_helpers,capifaxwm,capimin_lists
 
 #webmin.init_config()
 # -----------------
@@ -35,16 +34,15 @@ sys.stdout.flush()
 print "<hr>"
 #init capifaxwm module:
 if (capifaxwm.capiconfig_init()==-1):
-    print "<p><b>%s: Could not read/invalid configuration </b></p>" % webmin.text['error'].upper()
+    print "<p><b>%s: Could not read/invalid configuration </b></p>" % webmin.text.get('error','').upper()
 elif (capifaxwm.checkfaxuser(webmin.remote_user)==0):
-    print '<p><b>%s: user "%s" is not a valid capisuite fax user<br> Your Webmin/Usermin name must match a capisuite fax user (= *nix user) </b></p>' % (webmin.text['error'].upper(),webmin.remote_user)
+    print '<p><b>%s: user "%s" is not a valid capisuite fax user<br> Your Webmin/Usermin name must match a capisuite fax user (= *nix user) </b></p>' % (webmin.text.get('error','').upper(),webmin.remote_user)
 else:
 
     print '<form action="newfax.cgi" method="POST"><input type="hidden" name="faxcreate" value="new"><input type=SUBMIT value="Newfax"></form>'
-    print '&nbsp;<b> Do not edit/forward a fax, if you use colored faxes</b>'
     print '\n<hr>\n'
     if not OldWebminpy and webmin.userconfig.has_key('show_list'):
-	show_lists = webmin.userconfig['show_list'].split(',',5)	
+	show_lists = webmin.userconfig.get('show_list').split(',',5)	
     else:
 	show_lists = [0,1,2,3,4]
 
@@ -61,14 +59,14 @@ else:
 	    capimin_lists.ShowReceived(webmin.remote_user,fileprefix="voice",dldpage="download.cgi",removepage="abort.cgi")
 	elif l==3:
 	    print "<p><b> Done List: Fax</b></p>"
-	    capimin_lists.ShowGlobal(webmin.remote_user,"faxdone","abort.cgi")	    
+	    capimin_lists.ShowGlobal(webmin.remote_user,"faxdone",removepage="abort.cgi")	    
 	elif l==4:
 	    print "<p><b> Failed List: Fax</b></p>"
-	    capimin_lists.ShowGlobal(webmin.remote_user,"faxfailed","abort.cgi")	
+	    capimin_lists.ShowGlobal(webmin.remote_user,"faxfailed",removepage="abort.cgi")	
 	else:
 	    print "<p> Invalid show_list option or list or queue unknown - listening stopped </p>"
 	    break
 
 print "<p>&nbsp;</p><hr>"		
 webmin.footer([("/", "index")])
-#print "</body></html>"
+
