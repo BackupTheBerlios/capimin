@@ -15,7 +15,7 @@ import webmin
 import capifaxwm
 import cs_helpers,os, re,getopt, cgi, time, fcntl, shutil, tempfile
 
-webmin.header("Capisuitefax - create/forward/answer fax", config=1, nomodule=1)
+webmin.header("Capisuitefax - create/forward/answer fax", config=None, nomodule=1)
 print "<hr>"
 
 subject = ""

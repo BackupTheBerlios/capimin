@@ -20,11 +20,12 @@ qpath=""
 contenttype="application/octet-stream"
 fileext=""
 
-webmin.init_config()
+#webmin.init_config()
 # -----------------
 # needed, because the current webmin.py does not contain create_user_config_dirs and userconfig
 OldWebminpy=None
 try:
+    webmin.switch_to_remote_user()
     webmin.create_user_config_dirs()
 except NotImplementedError:
     OldWebminpy=1

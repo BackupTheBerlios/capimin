@@ -14,12 +14,14 @@ import webmin
 import capifaxwm,capimin_lists
 import cs_helpers,os, re,getopt
 
-webmin.init_config()
+#webmin.init_config()
 # -----------------
 # needed, because the current webmin.py does not contain create_user_config_dirs and userconfig
 OldWebminpy=None
 showconfig=1
 try:
+    showconfig=1
+    webmin.switch_to_remote_user()
     webmin.create_user_config_dirs()
 except NotImplementedError:
     OldWebminpy=1

@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.5 $
+#    version              : $Revision: 1.6 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@ import os, sys, re, getopt, commands, fcntl,errno,time,string,shutil,pwd
 import cs_helpers
 
 webmin.init_config()
+       
+
 # user independent path:
 UsersFax_Path=""
 UsersVoice_Path=""
