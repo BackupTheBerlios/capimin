@@ -55,6 +55,8 @@ def FormTime2CSTime(formtime, timediff=None):
     """
     try:
         timestruct = time.strptime(formtime,"%Y-%m-%d %H:%M")
+        timestruct = time.struct_time((timestruct[0],timestruct[1],timestruct[2],timestruct[3],timestruct[4],
+                                       timestruct[5],timestruct[6],timestruct[7],-1))
         if timediff:
             timediff=wm_pytools.ToLong(timediff)
         if timediff:
