@@ -33,7 +33,7 @@ capifaxwm.SwitchAndLoadConifg()
 
 capifaxwm.capiconfig_init()
 
-webmin.header("Capisuitefax - create/forward/answer fax", config=None, nomodule=1)
+webmin.header("Capisuitefax - create/forward/answer fax", config=None,help="newfax", nomodule=1)
 print "<hr>"
 
 
