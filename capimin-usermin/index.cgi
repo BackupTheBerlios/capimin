@@ -48,7 +48,9 @@ except:
 try:
     import cs_helpers
 except:
-    abort_error("Error, couldn't load cs_helper module. This is a module provided by CapiSuite")
+    abort_error("Error, couldn't load cs_helper module. This is a module provided by CapiSuite<br>\n"\
+                "If you have installed multiple python versions, make sure that all cgi files of this module<br>\n"\
+                "point to the python version, capisuite uses (see e.g. the program capisuitefax for the path)")
 
 try:
     import capifaxwm,capimin_lists,wm_pytools
