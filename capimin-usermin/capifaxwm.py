@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.14 $
+#    version              : $Revision: 1.15 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -50,8 +50,14 @@ def SwitchAndLoadConifg():
        
 # setup:
 # path to the sox (audio converter) program
-sox="sox"
+#sox="sox"
 
+# Name of the file that store's the job id for the next file
+# (used by cs_helpers.uniqueName)
+# Here it is used, to check the permissions in the send queue dir
+# (if the current user doesn't have write access to it, he can't create
+# new faxes)
+faxnextfile="fax-nextnr"
 
 # user independent path:
 UsersFax_Path=""
@@ -59,6 +65,8 @@ UsersVoice_Path=""
 
 listpath = None
 CAPI_config=None
+
+
 #faxsend = [0,'fax', 0,'fax_user_dir','sendq']
 #faxreceived = [0,'fax', 0,'fax_user_dir','received']
 #faxfailed = [0,'fax', 1,'spool_dir','failed']
@@ -341,6 +349,9 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
 
 
 def ConvertAudio2Sox(lafile,wavfile,volume=1.0):
+    """ Based on sendMIMEMail(...) from capisuite's cs_helpers.py
+	convert a la voice/audio file to a standard wav file
+    """
     if not lafile or not wavfile:
         raise CSConvError("False parameter (no in and/or outputfile)")
 	    
@@ -353,10 +364,14 @@ def ConvertAudio2Sox(lafile,wavfile,volume=1.0):
 
 
 def ConvertSFF(sfffile,destfile,desttype="pdf"):
+    """ Based on sendMIMEMail(...) from capisuite's cs_helpers.py
+	convert a faxfile (sff) to tif, ps or pdf
+    """
     if not sfffile or not destfile or not desttype:
 	raise CSConvError("False parameter (no in and/or outputfile)")
     if desttype!="pdf" and desttype!="ps" and desttype!="tif":
-	raise CSConvError("False parameter (no in and/or outputfile)")
+	raise CSConvError("False parameter (unsupported export type)")
+
     
     # sff -> tif
     if desttype=="tif":
@@ -397,11 +412,38 @@ def ConvertSFF(sfffile,destfile,desttype="pdf"):
 	remtempfailed.append(infile)
     return remtempfailed
  
-def ConvertCFF2PDF(cfffile,pdffile):
-    raise NotImplementedError
-    if not cfffile or not pdffile:
+def ConvertCFF2PDF(cfffile,destfile,desttype="pdf"):
+    """ Based on sendMIMEMail(...) from capisuite's cs_helpers.py
+	convert a color faxfile (cff) to ps or pdf	
+    """
+    if not cfffile or not destfile:
 	raise CSConvError("False parameter (no in and/or outputfile)")
+    if desttype!="pdf" and desttype!="ps":
+	raise CSConvError("False parameter (unsupported export type)")
 
+    # cff -> ps
+    if desttype=="ps":
+	outfile=destfile
+    else:
+	outfile=destfile+".ps"
+
+    ret=os.spawnlp(os.P_WAIT,"jpeg2ps","jpeg2ps","-m",cfffile,"-o",outfile)
+    if (ret or not os.access(outfile,os.F_OK)):
+	CSConvError("Can't convert cff to ps. jpeg2ps not installed?")
+    if desttype=="ps":
+	return
+    
+    # --- same as in ConvertSFF(...)
+    # ps -> pdf
+    infile=outfile
+    ret=os.spawnlp(os.P_WAIT,"ps2pdf","ps2pdf",infile,destfile)
+    if (ret or not os.access(destfile,os.F_OK)):
+	raise CSConvError("Can't convert ps to pdf (ps created from cff -> ps ). ps2pdf not installed?")
+    try:
+        os.remove(infile)
+    except:
+	remtempfailed.append(infile)
+    return remtempfailed
     
 
 def ConvertPDF2PS(pdffile,psfile):

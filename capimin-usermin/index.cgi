@@ -11,7 +11,7 @@ import sys
 sys.path.append("..")
 sys.stderr = sys.stdout # Send errors to browser
 import webmin
-import cs_helpers,capifaxwm,capimin_lists
+import cs_helpers,capifaxwm,capimin_lists,wm_pytools
 
 capifaxwm.SwitchAndLoadConifg()
 
@@ -30,8 +30,14 @@ elif (capifaxwm.checkfaxuser(webmin.remote_user)==0):
 else:
     print '<form action="newfax.cgi" method="POST"><input type="hidden" name="faxcreate" value="new"><input type=SUBMIT value="Newfax"></form>'
     print '\n<hr>\n'
+
+    remove_gdirs = wm_pytools.ExtractIntConfig(webmin.config.get('remove_gdirs'),0,0,1)
+    gremovepage=None
+    if remove_gdirs == 1:
+	gremovepage="abort.cgi"
+    
     if not capifaxwm._OldWebminpy and webmin.userconfig:
-	show_lists = webmin.userconfig.get('show_list',[0,1,2,3,4]).split(',',5)	
+	show_lists = webmin.userconfig.get('show_list',[0,1,2,3,4]).split(',',5)
     else:
 	show_lists = [0,1,2,3,4]
 
@@ -48,10 +54,10 @@ else:
 	    capimin_lists.ShowReceived(webmin.remote_user,fileprefix="voice",dldpage="download.cgi",removepage="abort.cgi")
 	elif l==3:
 	    print "<p><b> Done List: Fax</b></p>"
-	    capimin_lists.ShowGlobal(webmin.remote_user,"faxdone",removepage="abort.cgi")	    
+	    capimin_lists.ShowGlobal(webmin.remote_user,"faxdone",removepage=gremovepage)	    
 	elif l==4:
 	    print "<p><b> Failed List: Fax</b></p>"
-	    capimin_lists.ShowGlobal(webmin.remote_user,"faxfailed",removepage="abort.cgi")	
+	    capimin_lists.ShowGlobal(webmin.remote_user,"faxfailed",removepage=gremovepage)	
 	else:
 	    print "<p> Invalid show_list option or list or queue unknown - listening stopped </p>"
 	    break

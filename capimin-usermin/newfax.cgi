@@ -28,7 +28,7 @@ fqtype=""
 
 # userswitch can currently not be used here see capisuite bug 50
 # http://www.capisuite.de/capisuite/mantis/view_bug_page.php?f_id=0000050
-#capifaxwm.SwitchAndLoadConifg()
+capifaxwm.SwitchAndLoadConifg()
 
 capifaxwm.capiconfig_init()
 
@@ -133,7 +133,7 @@ def shownewform(fjobid="",fqtype=""):
 	# the jobid/qtype represent the fax file which will be forwarded, not a new jobid/file for the send queue
 	print '    <input type="hidden" name="jobid" value="%s"><input type="hidden" name="qtype" value="%s">' % (fjobid,fqtype)
     else:
-	print '    <tr><td><b>Faxfile (*.sff)</b></td><td><input type="file" name="upfile"></td></tr>'
+	print '    <tr><td><b>Faxfile (*.sff,*.ps,*.pdf)</b></td><td><input type="file" name="upfile"></td></tr>'
     print '    <input type="hidden" name="faxcreate" value="%s">' % formActionType
     print '    <tr><td><input type=SUBMIT value="Send"></td></tr>'
     print '   </table></form>'
@@ -153,6 +153,11 @@ try:
     if not form or capifaxwm.checkconfig()==-1:
 	capifaxwm.CSConfigError
             
+    # check the user (of this proccess) can write to the faxnextfile in the sendq dir
+    checkfile=os.path.join(capifaxwm.UsersFax_Path,webmin.remote_user,"sendq",capifaxwm.faxnextfile)
+    if os.path.exists(checkfile) and not os.access(checkfile,os.W_OK):    
+	raise "NoAccess"
+    
     # check post values
     faxcreate = form.getfirst("faxcreate")    
     if not faxcreate:
@@ -228,10 +233,7 @@ try:
 		tmpjobfile ="out_"+tmpjobfile 		
 
 	    capifaxwm.sendfax(webmin.remote_user,dialstring,newpath+tmpjobfile,timec,addressee,subject)
-	    # oh no, another try....
-	    try:
-		os.unlink(newpath+tmpjobfile)		
-	    except:
+	    if rmfile(newpath+tmpjobfile)==-1:
 		print "<p><b> Failed to remove tempory upload file</b></p>"
 	else:	
 	    print "<p><b> No file uploaded </b></p>"
@@ -268,10 +270,7 @@ try:
 	    raise capifaxwm.CSConfigError
 
 	capifaxwm.sendfax(webmin.remote_user,dialstring,faxfile,timec,addressee,subject)
-	# oh no, another try....
-        try:
-	    os.unlink(faxfile)
-        except:
+	if rmfile(faxfile)==-1:
             print "<p><b> Failed to remove tempory upload file</b></p>"
 
     else:
@@ -282,6 +281,10 @@ try:
 
 except capifaxwm.CSConfigError:
     print "<p><b>%s: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
+except "NoAccess":
+    print "<p><b> You don't have write access to an important file (%s)in your sendq<br>" % capifaxwm.faxnextfile
+    print " without the correct permission, you cannot create any new faxes</b></p>"
+    print '<p><form METHOD="POST" ACTION="chsendnextnr.cgi"><input type=SUBMIT value="change permission"></form></p>'
 except capifaxwm.CSConvError,e:
     print "<p><b>Convert- %s: %s</b></p>" % (webmin.text.get('error','').upper(),cgi.escape(e.message,1))
 except capifaxwm.FormInputError:

@@ -12,7 +12,7 @@
 #         -----------------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.10 $
+#    version              : $Revision: 1.11 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@ fileext=""
 
 capifaxwm.SwitchAndLoadConifg()
 
-
 capifaxwm.capiconfig_init()
 
 # soxvolume: default= 1.0, increases volume if >1.0 and decreace if <1.0
@@ -43,12 +42,17 @@ capifaxwm.capiconfig_init()
 # the default values will then be set by the wm_pytools.Extract[xy]Config calls
 soxvolume="1"
 intfaxformat=0
+intcfaxformat=0
+intvoiceformat=0
 if not capifaxwm._OldWebminpy and webmin.userconfig:
     soxvolume = str(wm_pytools.ExtractFloatConfig(webmin.userconfig.get('sox_volume'),soxvolume,0))
     intfaxformat = wm_pytools.ExtractIntConfig(webmin.userconfig.get('fax_download'),0,0,3)
+    intcfaxformat = wm_pytools.ExtractIntConfig(webmin.userconfig.get('cfax_download'),0,0,2)
+    intvoiceformat = wm_pytools.ExtractIntConfig(webmin.userconfig.get('voice_download'),0,0,1)
 
 faxformat=['sff','tif','ps','pdf'][intfaxformat]
-
+cfaxformat=['cff','ps','pdf'][intcfaxformat]
+voiceformat=['wav','la'][intvoiceformat]
 
 try:
     form = cgi.FieldStorage()
@@ -56,6 +60,7 @@ try:
 	raise capifaxwm.CSConfigError
     jobid = form.getfirst("jobid")    
     qtype = form.getfirst("qtype")
+    colorfax = None
     
     if (not jobid) or (not qtype):
 	raise capifaxwm.CSConfigError
@@ -74,8 +79,9 @@ try:
     elif qtype=="voicereceived":
 	qpath=os.path.join(capifaxwm.UsersVoice_Path,webmin.remote_user,"received")+os.sep
 	jobfile="voice-"+jobid+".txt"
-	fileext="wav"
-	contenttype="audio/x-wav"
+	fileext=voiceformat
+	if fileext=="wav":
+	    contenttype="audio/x-wav"
     else:
 	raise capifaxwm.CSConfigError
     control=cs_helpers.readConfig(qpath+jobfile)
@@ -90,14 +96,19 @@ try:
     # color fax:
     # if os.path.splitext(datafilename)[1].lower()==".cff": # may be needed later
     if datafilename.endswith("cff"):
-	fileext="cff"
+	fileext=cfaxformat
+	colorfax=1
     basename=datafilename[:datafilename.rindex('.')+1]
     if fileext=="wav":
 	capifaxwm.ConvertAudio2Sox(datafilename,basename+fileext,soxvolume)
 	datafilename = basename+fileext
-    if fileext=="tif" or fileext=="ps" or fileext=="pdf":	
+    elif (not colorfax) and (fileext=="tif" or fileext=="ps" or fileext=="pdf"):
 	capifaxwm.ConvertSFF(datafilename,basename+fileext,fileext)
 	datafilename = basename+fileext
+    elif colorfax and (fileext=="ps" or fileext=="pdf"):
+	capifaxwm.ConvertCFF(datafilename,basename+fileext,fileext)
+	datafilename = basename+fileext
+    
         
     datafile = open(datafilename,'rb').read()
     sendname=jobfile[:-3]+fileext    

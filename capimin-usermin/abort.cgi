@@ -17,10 +17,13 @@ import webmin
 import cs_helpers,capifaxwm,wm_pytools
 import cgi
 
-capifaxwm.load_user_config()
+ask_before_rm=1
+remove_gdirs=0
 
 jobid = None
 qtype = None
+
+
 def show_askform():
     webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
     print "<hr><br>"
@@ -51,18 +54,29 @@ def remove_job():
     print '<p><i> Returning to index page in 4 seconds...</i></p>'
 
 try:
-    capifaxwm.capiconfig_init()
     # get the cgi data
     formdata = cgi.FieldStorage()
+    if not formdata.has_key("qtype"):
+	raise capifaxwm.CSConfigError # might be better to use s.th. else ...
+    qtype = formdata.getfirst("qtype")
+    remove_gdirs = wm_pytools.ExtractIntConfig(webmin.config.get('remove_gdirs'),0,0,1)
+
+    if remove_gdirs!=1 and (qtype=="faxdone" or qtype=="faxfailed"):
+	raise "NoAccess"
+    elif qtype!="faxdone" and qtype!="faxfailed":
+	capifaxwm.SwitchAndLoadConifg()
+    else:
+        capifaxwm.load_user_config()
+
+    capifaxwm.capiconfig_init()
     # basic cgi data check
     if not formdata: 
 	raise capifaxwm.CSConfigError    
     if not formdata.has_key("jobid"):
 	raise capifaxwm.CSConfigError # might be better to use s.th. else ...
     jobid = formdata.getfirst("jobid")
-    if not formdata.has_key("qtype"):
-	raise capifaxwm.CSConfigError # might be better to use s.th. else ...
-    qtype = formdata.getfirst("qtype")
+    
+    
     if webmin.userconfig:
 	ask_before_rm = wm_pytools.ExtractIntConfig(webmin.userconfig.get('remove_ask'),1,0,1)
     if ask_before_rm==0 or formdata.has_key("rmyes"):
@@ -75,6 +89,10 @@ except capifaxwm.CSRemoveError,e:
     webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
     print "<hr><br>"
     print "<p><b>%s: %s</b></p>" %(webmin.text.get('error','').upper(),cgi.escape(e.message,1))
+except "NoAccess":
+    webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
+    print "<hr><br>"
+    print "<p><b> Sorry, you don't have the permisson for removing the job<br> Ask your (Usermin) Admin about it</b></p>"
 except capifaxwm.CSConfigError:
     webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
     print "<hr><br>"
