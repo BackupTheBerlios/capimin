@@ -21,7 +21,7 @@ ask_before_rm=1
 remove_gdirs=0
 
 jobid = None
-qtype = None
+cslist = None
 
 header_shown=0
 def local_header():
@@ -50,7 +50,7 @@ def show_askform(fromjoblist):
     print ' <td align="center"><form method="POST" action="delete.cgi"><input type="submit" value="Yes" name="rmyes">'
     for cjob in fromjoblist:
         print '     <input type="hidden" name="cjobid" value=%s>' % cjob
-    print '     <input type="hidden" name="qtype" value="%s"></form></td>' % qtype
+    print '     <input type="hidden" name="cslist" value="%s"></form></td>' % cslist
     print ' <td align="center"><form method="POST" action="index.cgi"><input type="submit" value="No" name="rmno"></form></td>'
     print '   </tr></table></td></tr>\n</table>'
 
@@ -60,11 +60,11 @@ def remove_jobs(fromjoblist):
     if not fromjoblist:
         raise capifaxwm.CSInternalError("remove_jobs()")
     if not isinstance(fromjoblist, list):
-        raise capifaxwm.CSInternalError("remove_jobs()")
+        fromjoblist = [fromjoblist] # ;)
 
     for cjob in fromjoblist:
         try:
-            capifaxwm.removejob(webmin.remote_user,cjob,qtype)    
+            capifaxwm.removejob(webmin.remote_user,cjob,cslist)    
         except capifaxwm.CSRemoveError,e:
             local_header()
             print "<br><b>%s: %s - JobID: %s </b><br>" %(webmin.text.get('error','').upper(),cgi.escape(e.message,1),cjob)
@@ -74,14 +74,14 @@ def remove_jobs(fromjoblist):
 try:
     # get the cgi data
     formdata = cgi.FieldStorage()
-    if not formdata or (not formdata.has_key("qtype")):
+    if not formdata or (not formdata.has_key("cslist")):
         raise capifaxwm.CSConfigError # might be better to use s.th. else ...
-    qtype = formdata.getfirst("qtype")
+    cslist = formdata.getfirst("cslist")
     remove_gdirs = wm_pytools.ExtractIntConfig(webmin.config.get('remove_gdirs'),0,0,1)
 
-    if remove_gdirs!=1 and (qtype=="faxdone" or qtype=="faxfailed"):
+    if remove_gdirs!=1 and (cslist=="faxdone" or cslist=="faxfailed"):
         raise "NoAccess"
-    elif qtype!="faxdone" and qtype!="faxfailed":
+    elif cslist!="faxdone" and cslist!="faxfailed":
         capifaxwm.SwitchAndLoadConifg()
     else:
         capifaxwm.load_user_config()

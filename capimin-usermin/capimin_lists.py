@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.8 $
+#    version              : $Revision: 1.9 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ import urllib
 capifaxwm.capiconfig_init()
 
 
-def ShowSend(user,changepage="change.cgi",newpage="",dldpage="",removepage="abort.cgi"):    
+def ShowSend(user,changepage="change.cgi",newpage="",dldpage="",removepage=""):    
     if (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0):
         raise capifaxwm.CSConfigError
 
@@ -77,7 +77,7 @@ def ShowSend(user,changepage="change.cgi",newpage="",dldpage="",removepage="abor
         print '   <input type="hidden" name="filetype" value="%s">' % filetype
         print '   <input type="hidden" name="cslist" value="%s">' % cslist
         print '   <td><input TYPE="SUBMIT" VALUE="%s"></td>\n  </form>' % webmin.text['index_change']
-        urlparams = urllib.urlencode({'jobid': jobid, 'qtype': 'faxsend'})
+        urlparams = urllib.urlencode({'cjobid': jobid, 'cslist': 'faxsend'})
         print '   <td>&nbsp;&nbsp;<i><a href="%s?%s">%s</a></i></td>' % (removepage,urlparams,webmin.text['index_toabort'])
         print ' </tr>'
 
@@ -221,7 +221,7 @@ def ShowReceived(user,fileprefix="fax",forwardopt=0,newpage="newfax.cgi",dldpage
 
         print "</tr>"
     print "</table>"
-    print '<input type="hidden" name="qtype" value="%s">' % qtype
+    print '<input type="hidden" name="cslist" value="%s">' % qtype
     print "<a href='' onClick='document.forms[\"%s\"].cjobid.checked = true; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = true; } return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
     print "&nbsp;&nbsp;<a href='' onClick='document.forms[\"%s\"].cjobid.checked = !document.forms[\"%s\"].cjobid.checked; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = !document.forms[\"%s\"].cjobid[i].checked; } return false'>%s</a>"  % (formname,formname,formname,formname,formname,webmin.text['list_invert'])
     print '<br><br><input type=submit name=delete value="%s">' % webmin.text['delete']
@@ -279,7 +279,7 @@ def ShowGlobal(user,cslist="faxdone",newpage="",dldpage="",removepage="",formnam
 
         print '   <td>&nbsp;%s</td>' % cs_helpers.getOption(control,"GLOBAL","subject","")
     print "</table>"
-    print '<input type="hidden" name="qtype" value="%s">' % cslist
+    print '<input type="hidden" name="cslist" value="%s">' % cslist
     print "<a href='' onClick='document.forms[\"%s\"].cjobid.checked = true; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = true; } return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
     print "&nbsp;&nbsp;<a href='' onClick='document.forms[\"%s\"].cjobid.checked = !document.forms[\"%s\"].cjobid.checked; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = !document.forms[\"%s\"].cjobid[i].checked; } return false'>%s</a>"  % (formname,formname,formname,formname,formname,webmin.text['list_invert'])
     print '<br><br><input type=submit name=delete value="%s"></form>' % webmin.text['delete']

@@ -37,8 +37,14 @@ capifaxwm.SwitchAndLoadConifg()
 
 capifaxwm.capiconfig_init()
 
-webmin.header("Capisuitefax - create/forward/answer fax", config=None,help="newfax", nomodule=1)
-print "<hr>"
+header_shown=0
+def local_header():
+    global header_shown
+    if header_shown==1:
+        return
+    webmin.header("Capisuite -  - create/forward/answer fax",  config=None, nomodule=1)
+    print "<hr><br>"
+    header_shown=1
 
 
 # Converts global string values to empty strings, if they are not assigned (None)
@@ -180,6 +186,7 @@ try:
         faxcreate = "new"
 
     if faxcreate =="forward":
+        local_header()
         qtype=form.getfirst("qtype")
         jobid = form.getfirst("jobid")
         if isinstance(jobid, list):
@@ -191,6 +198,7 @@ try:
         #    raise capifaxwm.CSConfigError
         shownewform(jobid,qtype)
     elif faxcreate =="new":
+        local_header()
         qtype=""
         jobid=""
         faxfile=""
@@ -203,16 +211,14 @@ try:
         formActionType="newsend"    
     
         if capifaxwm.CheckDialString(dialstring)==-1:
-            print "<p><b> Invalid dailstring </b></p>"      
-            raise capifaxwm.FormInputError
+            raise capifaxwm.FormInputError("Invalid dailstring")
         try:
             formTime = form.getfirst("year")+"-"+form.getfirst("month")+"-"+form.getfirst("day")+" "+\
                 form.getfirst("hour")+":"+form.getfirst("min")  
             timestruct = time.strptime(formTime,"%Y-%m-%d %H:%M")
             timec = time.asctime(timestruct)
         except:
-            print "<p><b> Invalid time and/or date </b></p>"        
-            raise capifaxwm.FormInputError  
+            raise capifaxwm.FormInputError("Invalid time and/or date")
 
         if form.has_key("upfile"):      
             # Security note: if you use python 2.3, change to tempfile.mkstemp
@@ -220,13 +226,11 @@ try:
             newpath=os.path.join(capifaxwm.UsersFax_Path,webmin.remote_user,"sendq")+os.sep
             tmpjobfile = os.path.basename(tempfile.mktemp(".tempfax.sff"))      
             upfile = form['upfile']
-            if not tmpjobfile or not newpath or not upfile.file :
-                print "<p>%s%s - %s</p>" % (newpath,tmpjobfile,cgi.escape(upfile,1))
-                raise capifaxwm.CSConfigError
- 
-            if not upfile.filename:     
-                print "<p><b> No file uploaded </b></p>"
-                raise capifaxwm.FormInputError
+            if not tmpjobfile or not newpath:
+                capifaxwm.CSInternalError("Could not build tempfile path and/or job path")
+            
+            if not upfile.filename or  not upfile.file:     
+                raise capifaxwm.FormInputError("No file uploaded")
             # avoid an "@" as filenamestart, which causes trouble in gs
             tmpjobfile = "ul_"+tmpjobfile #[1:]
             outFile = open(newpath+tmpjobfile,"wb")
@@ -243,9 +247,8 @@ try:
                 elif (re.search("application/pdf",filetype)):
                     fileext="pdf"
                 else:
-                    print "<p><b> False File format - currently only sff/ps/pdf files are supported </b></p>"
                     rmfile(newpath+tmpjobfile)
-                    raise capifaxwm.FormInputError
+                    raise capifaxwm.FormInputError("False File format - currently only sff/ps/pdf files are supported")
                 if fileext=="pdf":
                     #capifaxwm.ConvertPDF2PS(newpath+tmpjobfile,newpath+"ps_"+tmpjobfile)
                     #rmfile(newpath+tmpjobfile)
@@ -260,10 +263,12 @@ try:
 
             capifaxwm.sendfax(webmin.remote_user,dialstring,newpath+tmpjobfile,timec,addressee,subject)
             if rmfile(newpath+tmpjobfile)==-1:
-                print "<p><b> Failed to remove tempory upload file</b></p>"
+                raise "Warning","Failed to remove tempory upload file"
+            if header_shown==0:
+                webmin.redirect()
+            
         else:   
-            print "<p><b> No file uploaded </b></p>"
-            raise capifaxwm.FormInputError
+            raise capifaxwm.FormInputError("No file uploaded")
 
     elif faxcreate =="forwardsend":
         dialstring = form.getfirst("dialstring")    
@@ -273,8 +278,7 @@ try:
         formActionType="forwardsend"
     
         if capifaxwm.CheckDialString(dialstring)==-1:
-            print "<p><b> Invalid dailstring </b></p>"      
-            raise capifaxwm.FormInputError
+            raise capifaxwm.FormInputError("Invalid dailstring")
 
         try:
             formTime = form.getfirst("year","")+"-"+form.getfirst("month","")+"-"+form.getfirst("day","")+" "+\
@@ -282,8 +286,7 @@ try:
             timestruct = time.strptime(formTime,"%Y-%m-%d %H:%M")
             timec = time.asctime(timestruct)
         except:
-            print "<p><b> Invalid time and/or date </b></p>"        
-            raise capifaxwm.FormInputError
+            raise capifaxwm.FormInputError("Invalid time and/or date")
 
         fjobid=form.getfirst("jobid")
         fqtype=form.getfirst("qtype")   
@@ -292,12 +295,13 @@ try:
     
         faxfile = importqfax(fjobid,fqtype)
         if not faxfile:
-            print "<p><b> Forward temp file creation/copy failed</b></p>"
-            raise capifaxwm.CSConfigError
+            raise capifaxwm.CSInternalError("Forward temp file creation/copy failed")
 
         capifaxwm.sendfax(webmin.remote_user,dialstring,faxfile,timec,addressee,subject)
         if rmfile(faxfile)==-1:
-            print "<p><b> Failed to remove tempory upload file</b></p>"
+            raise "Warning","Failed to remove tempory upload file"
+        if header_shown==0:
+                webmin.redirect()
 
     else:
         # nothing else currently supported
@@ -307,14 +311,27 @@ try:
 
 
 except capifaxwm.CSConfigError:
+    local_header()
     print "<p><b>%s: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
 except "NoAccess":
+    local_header()
     print "<p><b> You don't have write access to an important file (%s)in your sendq<br>" % capifaxwm.faxnextfile
     print " without the correct permission, you cannot create any new faxes</b></p>"
     print '<p><form METHOD="POST" ACTION="chsendnextnr.cgi"><input type=SUBMIT value="change permission"></form></p>'
 except capifaxwm.CSConvError,e:
+    local_header()
     print "<p><b>Convert- %s: %s</b></p>" % (webmin.text.get('error','').upper(),cgi.escape(e.message,1))
-except capifaxwm.FormInputError:
+except capifaxwm.FormInputError,e:
+    local_header()
+    print "<p><b> False Formdata: %s  </b></p>" % e     
     shownewform(fjobid,fqtype)
-print "<hr>"
-webmin.footer([("", "module index")])
+except capifaxwm.CSInternalError,err:
+    local_header()
+    print "<p><b>%s: Inernal error (e.g. function called with wrong params): %s </b></p>" % (webmin.text.get('error','').upper(),err)
+except "Warning",e:
+    local_header()
+    print "<p><b>Warning/Info: %s </b></p>" % e
+
+if header_shown==1:
+    print "<hr>"
+    webmin.footer([("", "module index")])

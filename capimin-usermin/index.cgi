@@ -45,7 +45,7 @@ else:
         l=int(ls)
         if l==0:
             print "<p><b> Send Queue</b></p>"
-            capimin_lists.ShowSend(webmin.remote_user)
+            capimin_lists.ShowSend(webmin.remote_user,removepage="delete.cgi")
             print "<p><b> New Send Queue - DOES currently NOTHING </b></p>"
             capimin_lists.ShowSend2(webmin.remote_user)
         elif l==1:

@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.21 $
+#    version              : $Revision: 1.22 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -371,17 +371,14 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
     if (checkconfig == -1) or (checkfaxuser(user,1) == 0) or (not sourcefile):
         raise CSConfigError
     if not dialstring:
-        print "<p> empty dialstring </p>"
-        return -1 # -TODO-Error handling
+        raise CSUserInputError("empty dialstring")
     
     if ((cs_helpers.getOption(CAPI_config,user,"outgoing_MSN","")=="") and (CAPI_config.get(user,"fax_numbers","")=="")):
-        print "<p><b> Sorry, your are not allowed to send a fax</b></p>"
-        return -1
+        raise CSGeneralError("Sorry, your are not allowed to send a fax")
     
     filetype = os.path.splitext(sourcefile)[1].lower()[1:] # splittext always returns a list of 2, so no "None" check needed
     if not filetype:
-        print "<p><b> Invalid input (fax) file </b></p>"
-        raise CSConfigError
+        raise CSUserInputError("nvalid input (fax) file")
     
     # Convert to empty string, if set to "None"
     if addressee==None: addressee=""
@@ -390,15 +387,15 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
     # filter out common separators from dialstring, check it
     dialstring=dialstring.translate(string.maketrans("",""),"-/ ()")
     if re.compile("[^0-9\+]+").search(dialstring):
-        print "<p> Invalid dialstring </p>"
-        return -1
+        raise CSUserInputError("Invalid dialstring")
+
     prefix=cs_helpers.getOption(CAPI_config,user,"dial_prefix","")
     if (useprefix):
             dialstring=prefix+dialstring
     
     if (not os.access(sourcefile,os.R_OK)):
-        print "<p><b>ERROR: cannot read fax source file:%s</b></p>" % sourcefile,
-        return -1
+        raise CSInternalError("Cannot read fax source file:"+cgi.escape(sourcefile,1))
+
     sendq = os.path.join(UsersFax_Path,user,"sendq")+"/"
     newname=cs_helpers.uniqueName(sendq,"fax",filetype)
     
@@ -420,7 +417,7 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
         os.chown(newname,user_entry[2],user_entry[3])
         os.chown(newname[:-3]+"txt",user_entry[2],user_entry[3])
 
-    print "<p>",sourcefile,"successful enqueued as",newname,"for",dialstring,"</p>"
+    #print "<p>",sourcefile,"successful enqueued as",newname,"for",dialstring,"</p>"
     
 
 
@@ -606,6 +603,12 @@ class CSUserInputError(Exception):
     def __str__(self):
         return repr(self.message)
 
+class CSGeneralError(Exception):
+    """General Error"""
+    def __init__(self, message):
+        self.message = message
+    def __str__(self):
+        return repr(self.message)
 
 
 class CSRemoveError(Exception):
