@@ -18,7 +18,7 @@
 # Uses functions from CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.22 $
+#    version              : $Revision: 1.23 $
 # http://www.capisuite.de
 
 # Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
@@ -62,11 +62,8 @@ else:
     for ls in show_lists:
         l=int(ls)
         if l==0:
-            print "<p><b> Send Queue</b></p>"
-            capimin_lists.ShowSend2(webmin.remote_user)
-            #print "<p><b> OLD Send Queue </b></p>"
-            #capimin_lists.ShowSend(webmin.remote_user,removepage="delete.cgi")
-           
+            print "<p><b> Send Queue VIII</b></p>"
+            capimin_lists.ShowSend3(webmin.remote_user)
         elif l==1:
             print "<p><b> Received List: Fax</b></p>"
             capimin_lists.ShowReceived(webmin.remote_user,forwardopt=1,dldpage="download.cgi",removepage="delete.cgi")

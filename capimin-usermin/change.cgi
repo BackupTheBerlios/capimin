@@ -17,7 +17,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #
-# Coding style: Max linewidth 120 chars
+# Coding style: Max linewidth 120 chars, 4 spaces per tab
 #
 # 
 
@@ -46,10 +46,14 @@ try:
     if form.has_key("cslist"):
         cslist=form.getfirst("cslist")
 
-    if form.has_key("change") or form.has_key("schange"):
+    if form.has_key("change") or form.has_key("schange") or form.has_key("onehlater"):
+        LocalHeader()
         if not form.has_key("cindex"):
-            raise "NoneSelected"        
-        FormChangeJob(user,form)
+            raise "NoneSelected"
+        timechange=None
+        if form.has_key("onehlater"):
+            timechange=60
+        FormChangeJob(user,form,timechange)
         if not IsHeaderShown():
             webmin.redirect()
     elif form.has_key("delete"):

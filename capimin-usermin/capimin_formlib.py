@@ -16,13 +16,13 @@
 
 
 #
-# Coding style: Max linewidth 120 chars
+# Coding style: Max linewidth 120 chars, 4 spaces per tab
 #
 # 
 
 import webmin
 import time, string, cgi
-import capifaxwm
+import capifaxwm,wm_pytools
 
 header_shown=None
 header_title=""
@@ -46,48 +46,50 @@ def LocalHeader():
 
 #capifaxwm.capiconfig_init()
 
-def FormTime2CSTime(formtime):
+def FormTime2CSTime(formtime, timediff=None):
     """Convert time provided (e.g.) by a form to the CapiSuite format
         formtime sample "2005-1-29 2:21"
+        param timediff: value in seconds to change param formtime 
         return value is genderated by time.asctime(..) sample: "Sat Jan 29 02:21:00 2005"
             which is used by capisuite in the jobfiles
     """
     try:
         timestruct = time.strptime(formtime,"%Y-%m-%d %H:%M")
+        if timediff:
+            timediff=wm_pytools.ToLong(timediff)
+        if timediff:
+            temptime = time.mktime(timestruct)
+            temptime = temptime + timediff
+            timestruct = time.gmtime(temptime)
         cstime = time.asctime(timestruct)
     except:
         raise capifaxwm.CSUserInputError("Invalid time and/or date from Formdata")
     return cstime
 
 # internal function
-def __form_change_singlejob(user,formdata):
+def __form_change_singlejob(user,formdata,timediff=None):
     
  
-    formTime = formdata.getfirst("year","")+"-"+formdata.getfirst("month","")+"-"+formdata.getfirst("day","")+" "+\
-                formdata.getfirst("hour","")+":"+formdata.getfirst("min","")
-    jtime=FormTime2CSTime(formTime)       
-    subject = formdata.getfirst("formSubject","")
-    addressee = formdata.getfirst("formDialAddressee","")
-    dialstring = formdata.getfirst("formDialString")
-    jtries = formdata.getfirst("formTries")
+    formTime = formdata.getfirst("year_0","")+"-"+formdata.getfirst("month_0","")+"-"+formdata.getfirst("day_0","")+" "+\
+                formdata.getfirst("hour_0","")+":"+formdata.getfirst("min_0","")
+    jtime=FormTime2CSTime(formTime,timediff)       
+    subject = formdata.getfirst("formSubject_0","")
+    addressee = formdata.getfirst("formDialAddressee_0","")
     cjobid = formdata.getfirst("cjobid")
-    filetype = formdata.getfirst("filetype")
     cslist = formdata.getfirst("cslist")
 
-    capifaxwm.change_job(user,cjobid,cslist,dialstring,filetype,jtime,addressee,subject,jtries)
+    capifaxwm.ChangeJob(user,cjobid,cslist,None,jtime,addressee,subject)
 
 
-def FormChangeJob(user,formdata):
+def FormChangeJob(user,formdata,timediff=None):
     if (not formdata) or (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0):
         raise capifaxwm.CSConfigError
     if (not formdata.has_key("cindex")) or (not formdata.has_key("cjobid")) or \
-        (not formdata.has_key("formDialString")) or (not formdata.has_key("formOrgDate")) or \
-        (not formdata.has_key("formTries")) or (not formdata.has_key("filetype")) or \
         (not formdata.has_key("cslist")):
         raise capifaxwm.CSInternalError("FormChangeJob() - Invalid Formdata")
       
     if not isinstance(formdata.getvalue("cjobid"),list):
-        __form_change_singlejob(user,formdata)
+        __form_change_singlejob(user,formdata,timediff)
         return
     
     #TODO check listtypes
@@ -96,37 +98,64 @@ def FormChangeJob(user,formdata):
         
     formjoblist = formdata.getvalue("cindex")
     if not isinstance(formjoblist, list):
+        print "<p> cindex is not </p>"
         formjoblist = [formjoblist] # ;)
+    if not isinstance(formdata.getvalue("formTries"), list):  
+        print "<p> formTries is not </p>"
+    else:
+        print "<p> formTries is </p>"
     cjobid=None
     for job in formjoblist:
         try:
             cindex=int(job)
             if cindex==None or cindex>=alllen or cindex<0:
                 raise capifaxwm.CSInternalError("FormChangeJob() - Invalid Formdata - out of range")
-            cjobid = formdata["cjobid"][cindex].value
-
-            formTime = formdata["year"][cindex].value+"-"+formdata["month"][cindex].value+"-"+\
-                       formdata["day"][cindex].value+" "+formdata["hour"][cindex].value+":"+\
-                       formdata["min"][cindex].value
-            jtime=FormTime2CSTime(formTime)
-            subject = formdata["formSubject"][cindex].value
-            addressee = formdata["formDialAddressee"][cindex].value
-            dialstring = formdata["formDialString"][cindex].value
-            jtries = formdata["formTries"][cindex].value
+            cjobid = formdata["cjobid"][cindex].value           
             
-            filetype = formdata["filetype"][cindex].value            
-            
-            capifaxwm.change_job(user,cjobid,cslist,dialstring,filetype,jtime,addressee,subject,jtries)
+            year=""
+            if formdata.has_key("year_"+str(cindex)):
+                year = formdata["year_"+str(cindex)].value
+            month=""
+            if formdata.has_key("month_"+str(cindex)):
+                month = formdata["month_"+str(cindex)].value
+            day=""
+            if formdata.has_key("day_"+str(cindex)):
+                day = formdata["day_"+str(cindex)].value
+            hour="00"
+            if formdata.has_key("hour_"+str(cindex)):
+                hour = formdata["hour_"+str(cindex)].value            
+            minute="00"
+            if formdata.has_key("min_"+str(cindex)):
+                minute = formdata["min_"+str(cindex)].value
+            formTime = "%s-%s-%s %s:%s" % (year,month,day,hour,minute)
+            #formTime = formdata["year"][cindex].value+"-"+formdata["month"][cindex].value+"-"+\
+            #           formdata["day"][cindex].value+" "+formdata["hour"][cindex].value+":"+\
+            #           formdata["min"][cindex].value
+            jtime=FormTime2CSTime(formTime,timediff)           
+           
+            subject=""
+            if formdata.has_key("formSubject_"+str(cindex)):
+                subject = formdata["formSubject_"+str(cindex)].value
+                
+            addressee=""
+            if formdata.has_key("formDialAddressee_"+str(cindex)):
+                addressee = formdata["formDialAddressee_"+str(cindex)].value
+    
+            print "<br> Changing Job....<br>"          
+            capifaxwm.ChangeJob(user,cjobid,cslist,None,jtime,addressee,subject)
         except capifaxwm.CSInternalError,err:
             LocalHeader()
             print "<p><b>%s: Internal error (e.g. function called with wrong params): %s</b></p>" %\
                   (webmin.text.get('error','').upper(),err)            
         except capifaxwm.CSJobChangeError,err:
             LocalHeader()
-            print "<p><b>%s: %s: %s</b></p>" % (webmin.text.get('error','').upper(),webmin.text.get('change_job_error',''),err)             
+            print "<p><b>%s: %s: %s</b></p>" % (webmin.text.get('error','').upper(),webmin.text.get('change_job_error',''),err)
+        except capifaxwm.CSUserInputError, err:
+            LocalHeader()
+            print "<p><b>Input-%s: %s: %s</b></p>" % (webmin.text.get('error','').upper(),err)
         except:
             LocalHeader()
-            print "<br><b>%s:  - JobID: %s</b><br>" %(webmin.text.get('error','').upper(),cjobid)
+            print "<br><b>%s (unknown/general):  JobID: %s</b><br>" %(webmin.text.get('error','').upper(),cjobid)
         
     
 def ShowForm_RemoveAsk(formdata,actionpage,returnpage="index.cgi"):

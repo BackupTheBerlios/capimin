@@ -44,3 +44,15 @@ def ExtractIntConfig(configtext,default=None,vmin=None,vmax=None):
     except:
         return default
     return confval
+
+def ToLong(x):
+    """Simple Function to convert param x to long
+    can also be used to check. Unlike the python long() function, this doesn't raises an
+    exception, it simply return None in case of an error
+    """
+    
+    try:
+        valueX = long(x)
+    except:
+        return None
+    return valueX

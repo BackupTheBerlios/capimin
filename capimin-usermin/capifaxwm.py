@@ -17,7 +17,7 @@
 # Uses functions from CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.24 $
+#    version              : $Revision: 1.25 $
 # http://www.capisuite.de
 
 # Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
@@ -295,7 +295,7 @@ def removejob(user,jobid,cslist):
         if (err.errno in (errno.EACCES,errno.EAGAIN)):
             raise CSRemoveError("Job is currently in transmission or in similar use. Can't remove.")
 
-def change_job(user,jobid,cslist,dialstring,filetype,jtime,addressee="",subject="",jtries="0"):
+def change_job_advanced(user,jobid,cslist,dialstring,filetype,jtime,addressee="",subject="",jtries="0"):
     """Change a job settings (only used for send queue)
         all params have to be comaptible to the CapiSuite job file format
     """
@@ -346,7 +346,71 @@ def change_job(user,jobid,cslist,dialstring,filetype,jtime,addressee="",subject=
             raise CSJobChangeError("Job is currently in transmission or in similar use. Can't change it.")
         else:
             raise CSJobChangeError("Unkown access error while changing a job:"+err)
-   
+
+def ChangeJob(user,jobid,cslist,dialstring=None,starttime=None,addressee=None,subject=None):
+    """changes a job, imports missing values from the job file
+    a replacement for change_job_advanced completly (not dual error checks, etc)
+    """
+    if (checkconfig() == -1) or (checkfaxuser(user,1) == 0):
+        raise CSConfigError
+    if not listtypes.has_key(cslist) or CheckJobID(jobid)==-1:
+        raise CSInternalError("Invalid list/queue type or jobid provided")
+
+    # the next line (if-statement), limit this funtion to only
+    # modify the fax send queue
+    if cslist!="faxsend":
+        raise CSInternalError("Cannot modify any other queue than fax send")
+    
+    qpath=BuildListPath(cslist,user)
+    if (not os.access(qpath,os.R_OK | os.W_OK )):
+        raise CSInternalError("Can't read/write queue dir: "+cslist)
+    jobfile = BuildJobFile(user,jobid,cslist)
+    try:
+        control=cs_helpers.readConfig(qpath+jobfile)
+    except IOError,err:
+        raise CSJobChangeError("Failed to read the jobfile - IOError: %s" % err)
+    except:
+        raise CSJobChangeError("Failed to read the jobfile")
+
+    print "step2"
+    if dialstring==None:
+        dialstring=control.get("GLOBAL","dialstring")
+    else:
+        dialstring=ConvertDialString(dialstring)
+       
+    if starttime==None:
+        starttime=control.get("GLOBAL","starttime")
+    print "step4"
+    if addressee==None:
+        addressee=cs_helpers.getOption(control,"GLOBAL","addressee","")
+    print "step6"
+    if subject==None:
+        subject=cs_helpers.getOption(control,"GLOBAL","subject","")
+
+    jtries = control.get("GLOBAL","tries")
+    datafile = control.get("GLOBAL","filename")
+    
+    # check if job file still exists -> if not, the job might already be send or deleted
+    # this check might be obselete since cs_helpers.readConfig(..) is used in this function...
+    if not os.path.exists(qpath+jobfile):
+        raise CSJobChangeError("Job doesn't exists anymore - fax already send or deleted")
+    
+    try:
+        lockfile=open(qpath+jobfile[:-3]+"lock","w")
+        # lock so that it isn't deleted while sending
+        fcntl.lockf(lockfile,fcntl.LOCK_EX | fcntl.LOCK_NB)
+        cs_helpers.writeDescription(datafile,"dialstring=\""+dialstring+"\"\n"
+            +"starttime=\""+starttime+"\"\ntries=\""+jtries+"\"\n"
+            +"user=\""+user+"\"\naddressee=\""+addressee+"\"\nsubject=\""
+            +subject+"\"\n")
+        fcntl.lockf(lockfile,fcntl.LOCK_UN)
+        os.unlink(qpath+jobfile[:-3]+"lock")
+    except IOError,err:
+        if (err.errno in (errno.EACCES,errno.EAGAIN)):
+            raise CSJobChangeError("Job is currently in transmission or in similar use. Can't change it.")
+        else:
+            raise CSJobChangeError("Unkown access error while changing a job:"+err)
+    
 def CheckDialString(dialstring):
     """check a dialstring, allows typical "help chars"/separators"""    
     if not dialstring:
