@@ -1,9 +1,9 @@
-# Mo>Jst/all fax functions in this file are  form (modified for html/webmin):
+# Most/all fax functions in this file are  form (modified for html/webmin):
 #             capisuitefax - capisuite tool for enqueuing faxes
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.4 $
+#    version              : $Revision: 1.5 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by

@@ -12,7 +12,7 @@ import sys
 sys.path.append("..")
 sys.stderr = sys.stdout # Send errors to browser
 import os, re, cgi
-import webmin,cs_helpers,capifaxwm
+import webmin,cs_helpers,capifaxwm,wm_pytools
 
 qtype=""
 jobid=""
@@ -20,9 +20,25 @@ qpath=""
 contenttype="application/octet-stream"
 fileext=""
 
-capifaxwm.capiconfig_init()
 webmin.init_config()
+# -----------------
+# needed, because the current webmin.py does not contain create_user_config_dirs and userconfig
+OldWebminpy=None
+try:
+    webmin.create_user_config_dirs()
+except NotImplementedError:
+    OldWebminpy=1
+# -----------------
 
+capifaxwm.capiconfig_init()
+
+# soxvolume: default= 1.0, increases volume if >1.0 and decreace if <1.0
+# added because of http://lists.berlios.de/pipermail/capisuite-users/2003-October/000363.html
+soxvolume="1"
+if not OldWebminpy and webmin.userconfig.has_key('sox_volume'):
+    soxvolume = str(wm_pytools.ExtractFloatConfig(webmin.userconfig['sox_volume'],soxvolume,0))
+    
+		    
 
 try:
     form = cgi.FieldStorage()
@@ -64,7 +80,7 @@ try:
     if fileext=="wav":
 	#la -> wav
 	# don't use stdout as sox needs a file to be able to seek in it otherwise the header will be incomplete
-	ret = os.spawnlp(os.P_WAIT,"sox","sox",datafilename,basename+"wav")
+	ret = os.spawnlp(os.P_WAIT,"sox","sox","-v",soxvolume,datafilename,basename+"wav")
 	
 	if (ret or not os.access(basename+"wav",os.R_OK)):
     	    raise "conv-error","Error while calling sox. (ISDN voice->wav) Not installed?"
@@ -80,16 +96,15 @@ try:
     if fileext=="wav":
 	os.unlink(datafilename)
 except "conv-error",errormessage:
-    webmin.header("Download", config=1, nomodule=1)
+    webmin.header("Download", nomodule=1)    
     print "<hr>"
     print "<p><b> Convert-Error:",errormessage,"</b></p>"
     print "<hr>"
     webmin.footer([("", "module index")])   
 
 except:
-    webmin.header("Download", config=1, nomodule=1)
+    webmin.header("Download", nomodule=1)    
     print "<hr>"
     print "<p><b> ERROR: Request could not be parsed or file access error </b></p>"
     print "<hr>"
     webmin.footer([("", "module index")])
-
