@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.2 $
+#    version              : $Revision: 1.3 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -98,6 +98,9 @@ def ShowReceived(user,fileprefix="fax",forwardopt=0,newpage="newfax.cgi",dldpage
 	print '   <th>&nbsp;</td>'
     print ' </tr>'
     
+    if not os.path.exists(path):
+	print "</table>"
+	return    
     files=os.listdir(path)
     files=filter (lambda s: re.match(fileprefix+"-.*\.txt",s),files)
 
@@ -150,6 +153,10 @@ def ShowGlobal(user,cslist="faxdone",removepage=""):
     if capifaxwm.listtypes[cslist][1]==1:
 	fileprefix=user+"-"
     fileprefix=fileprefix+capifaxwm.listtypes[cslist][0]+"-"
+    
+    if not os.path.exists(path):
+	print "</table>"
+	return    
     files=os.listdir(path)
     files=filter (lambda s: re.match(fileprefix+".*\.txt",s),files)
 
