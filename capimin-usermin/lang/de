@@ -11,6 +11,10 @@ index_change=&Auml;ndern
 index_download=Download
 
 csfax_user=Benutzer
+csfax_nocallerid=unbekannt
 
 newfax_senddate=Ausf&uuml;hren am
 newfax_sendtime=Ausf&uuml;hren um
+
+list_all=Alle ausw&auml;hlen
+list_invert=Auswahl umkehren

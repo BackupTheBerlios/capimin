@@ -1,0 +1,84 @@
+<header>ISDN info-values and error codes</header>
+<p>See the capisuite user documentation for more</p>
+<hr>
+<h3>Protocol errors</h3>
+<p>Protocol errors indicate some problem during data transfer. Only messages for&nbsp;<br>
+the transparent (voice) and fax protocols spoken by CapiSuite are shown here.</p>
+<p>  0 - Normal call clearing, no error<br>
+  3301 - Protocol error layer 1 (broken line or B-channel removed by signaling&nbsp;protocol)<br>
+  3302 - Protocol error layer 2<br>
+  3303 - Protocol error layer 3<br>
+  3304 - Another application got that call<br>
+  3311 - T.30 (fax) error: Connection not successful (remote station is not a G3
+fax device)<br>
+  3312 - T.30 (fax) error: Connection not successful (training error)<br>
+  3313 - T.30 (fax) error: Disconnect before transfer (remote station doesn't&nbsp;<br>
+  support transfer mode, e.g. wrong resolution)<br>
+  3314 - T.30 (fax) error: Disconnect during transfer (remote abort)<br>
+  3315 - T.30 (fax) error: Disconnect during transfer (remote procedure error)<br>
+  3316 - T.30 (fax) error: Disconnect during transfer (local transmit data&nbsp;underflow)<br>
+  3317 - T.30 (fax) error: Disconnect during transfer (local receive data&nbsp;overflow)<br>
+  3318 - T.30 (fax) error: Disconnect during transfer (local abort)<br>
+  3319 - T.30 (fax) error: Illegal parameter coding (e.g. defective SFF file)</p>
+
+<h3>ISDN error codes</h3><p>These codes are ISDN error codes which are described by the ETS 300 102-01&nbsp;<br>
+standard in more detail. It's currently available for private use at&nbsp;<br>
+http://www.etsi.org without fee. For details how the ISDN codes are mapped to&nbsp;<br>
+the CAPI numbers see the CAPI specification, parameter "Info".<br>
+</p>
+<p>
+  3400 - Normal termination, no reason available<br>
+3400 - Normal termination, no reason available<br>
+  3480 - Normal termination<br>
+  3481 - Unallocated (unassigned) number<br>
+  3482 - No route to specified transit network<br>
+  3483 - No route to destination<br>
+  3486 - Channel unacceptable<br>
+  3487 - Call awarded and being delivered in an established channel<br>
+  3490 - Normal call clearing<br>
+  3491 - User busy<br>
+  3492 - No user responding<br>
+  3493 - No answer from user (user alerted)<br>
+  3495 - Call rejected<br>
+  3496 - Number changed<br>
+  349A - Non-selected user clearing<br>
+  349B - Destination out of order<br>
+  349C - Invalid number format<br>
+  349D - Facility rejected<br>
+  349E - Response to STATUS ENQUIRY<br>
+  349F - Normal, unspecified<br>
+  34A2 - No circuit / channel available<br>
+  34A6 - Network out of order<br>
+  34A9 - Temporary failure<br>
+  34AA - Switching equipment congestion<br>
+  34AB - Access information discarded<br>
+  34AC - Requested circuit / channel not available<br>
+  34AF - Resources unavailable, unspecified<br>
+  34B1 - Quality of service unavailable<br>
+  34B2 - Requested facility not subscribed<br>
+  34B9 - Bearer capability not authorized<br>
+  34BA - Bearer capability not presently available<br>
+  34BF - Service or option not available, unspecified<br>
+  34C1 - Bearer capability not implemented<br>
+  34C2 - Channel type not implemented<br>
+  34C5 - Requested facility not implemented<br>
+  34C6 - Only restricted digital information bearer capability is available<br>
+  34CF - Service or option not implemented, unspecified<br>
+  34D1 - Invalid call reference value<br>
+  34D2 - Identified channel does not exist<br>
+  34D3 - A suspended call exists, but this call identity does not<br>
+  34D4 - Call identity in use<br>
+  34D5 - No call suspended<br>
+  34D6 - Call having the requested call identity has been cleared<br>
+  34D8 - Incompatible destination<br>
+  34DB - Invalid transit network selection<br>
+  34DF - Invalid message, unspecified<br>
+  34E0 - Mandatory information element is missing<br>
+  34E1 - Message type non-existent or not implemented<br>
+  34E2 - Message not compatible with call state or message type non-existent or  not implemented<br>
+  34E3 - Information element non-existent or not implemented<br>
+  34E4 - Invalid information element contents<br>
+  34E5 - Message not compatible with call state<br>
+  34E6 - Recovery on timer expiry<br>
+  34EF - Protocol error, unspecified</p>
+<hr>

@@ -11,6 +11,10 @@ index_change=Change
 index_download=Download
 
 csfax_user=User
+csfax_nocallerid=unknown
 
 newfax_senddate=Run on date
 newfax_sendtime=Run at time
+
+list_all=Select all
+list_invert=Invert selection
