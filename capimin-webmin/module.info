@@ -1,7 +1,7 @@
 name=capimin
 category=
 desc=Capisuite
-longdesc=Manage Capisuite fax queue
+longdesc=Manage Capisuite
 depends=1.0
-version=0.0.1a
+version=0.0.1
 
