@@ -1,4 +1,34 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+#
+# Written by Carsten <cibi@users.berlios.de>
+# Copyright (C) 2003,2004 Carsten (http://capimin.berlios.de)
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License. 
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+# Uses functions from/based on CapSuite (cs_helper.py, capisuitefax):
+#    copyright            : (C) 2002 by Gernot Hillier
+#    email                : gernot@hillier.de
+# http://www.capisuite.org
+
+# Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
+# Copyright (C) 2002 Cendio Systems AB (http://www.cendio.se)
+
+
+#
+# Coding style: Max linewidth 120 chars, 4 spaces per tab
+#
+
 
 import sys
 sys.path.append("..")
@@ -14,17 +44,20 @@ def abort_error(errmsg):
 try:
     import webmin
 except:
-    abort_error("Error, couldn't load Webmin-Python module, not installed?<br>See the capimin website for install instructions")
+    abort_error("ERROR: couldn't load Webmin-Python module, not installed?<br>"\
+                "See the capimin website for install instructions")
     
 try:
     import cs_helpers
 except:
-    abort_error("Error, couldn't load cs_helper module. This is a module provided by CapiSuite")
+    abort_error("ERROR: couldn't load cs_helper module. This is a module provided by CapiSuite<br>\n"\
+                "If you have installed multiple python versions, make sure that all cgi files of this module<br>\n"\
+                "point to the python version, capisuite uses (see e.g. the program capisuitefax for the path)")
 
 try:
     import wm_pytools,capifaxwm
 except:
-    abort_error("Error, couldn't load capmin modules. capimin wasn't installed correct")
+    abort_error("ERROR: couldn't load capmin modules. capimin wasn't installed correct")
 
 
 webmin.header(webmin.text['index_title'],image=None,help="intro",config=0,nomodule=1)
