@@ -1,0 +1,40 @@
+index_title=Capisuite Webminmodule neu (test)
+index_id=ID
+index_addressee=Adressat
+index_dialstring=FaxNummer
+index_tries=Versuche
+index_nexttry=N&auml;chster Versuch
+index_subject=Betreff
+index_toabort=Abbrechen
+index_forward=Weiterleiten
+index_change=&Auml;ndern
+index_download=Download
+index_1hlater=1h sp&auml;ter
+index_chnagesend=&Auml;ndern & Senden
+index_newfax=Neues Fax
+index_sendq_title=Faxausgang
+
+capimin_help=Hilfe
+
+csfax_user=Benutzer
+csfax_nocallerid=unbekannt
+
+newfax_title=CapiSuite - Fax erstellen/weiterleiten
+newfax_senddate=Ausf&uuml;hren am
+newfax_sendtime=Ausf&uuml;hren um
+newfax_dailprefix=Faxnummern pr&auml;fix
+newfax_useprefix=Benutze
+newfax_noneprefix=nicht vorhanden
+newfax_destination=Empf&auml;nger (Faxnummer)
+newfax_forwardwarn1=Das empfangene Faxdokument enth&auml;lt m&ouml;glicherweise Informationen von wo und wann Sie das Fax empfangen haben!
+newfax_forwardwarn2=Laden Sie das Fax herunter, bearbeiten es und versenden es als neues Fax, wenn Sie diese Informationen nicht mitsenden wollen
+
+newfax_faxfile=Faxdatei
+newfax_send=Senden
+newfax_new_tablehead=Neues Fax erstellen
+newfax_forward_tablehead=Fax weiterleiten
+
+list_all=Alle ausw&auml;hlen
+list_invert=Auswahl umkehren
+
+change_job_error=&Auml;ndern des Fax/Auftrag fehlgeschlagen

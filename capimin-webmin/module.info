@@ -1,0 +1,7 @@
+name=capimin
+category=
+desc=Capisuite
+longdesc=Manage Capisuite fax queue
+depends=1.0
+version=0.0.1a
+

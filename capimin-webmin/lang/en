@@ -1,0 +1,39 @@
+index_title=CapiSuite Webmin new module (test)
+index_id=ID
+index_addressee=Address
+index_dialstring=Faxnumber
+index_tries=Tries
+index_nexttry=Next try
+index_subject=Subject
+index_toabort=Abort
+index_forward=Forward
+index_change=Change
+index_download=Download
+index_1hlater=1h later
+index_chnagesend=Change & Send
+index_newfax=New Fax
+index_sendq_title=Fax send queue
+
+capimin_help=Help
+
+csfax_user=User
+csfax_nocallerid=unknown
+
+newfax_title=CapiSuite - create/forward fax
+newfax_senddate=Run on date
+newfax_sendtime=Run at time
+newfax_dailprefix=Dialprefix
+newfax_useprefix=Use
+newfax_noneprefix=None
+newfax_destination=Destination (dialstring)
+newfax_forwardwarn1=The received fax document may includes information from where and when you received it
+newfax_forwardwarn2=Download and edit the fax if you don't want to send this information with the new fax
+newfax_faxfile=Faxfile
+newfax_send=Send
+newfax_new_tablehead=Create a new fax
+newfax_forward_tablehead=forward a fax
+
+list_all=Select all
+list_invert=Invert selection
+
+change_job_error=Failed to change the fax/job
