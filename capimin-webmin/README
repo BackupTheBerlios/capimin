@@ -3,6 +3,10 @@ Capimin - a Webmin module to manage CapiSuite
 
 See the website at http://capimin.berlios.de for Help
 
+This module only lists your current configuration, so you can verify it.
+If you're looking for a module to create/download/delete/etc faxes/voice
+calls, use the Usermin module
+
  
 Requirements
 ------------
@@ -43,7 +47,7 @@ Capimin and external Copyright
  Uses functions from/based on CapSuite (cs_helper.py, capisuitefax):
     copyright            : (C) 2002 by Gernot Hillier
     email                : gernot@hillier.de
-    version              : $Revision: 1.2 $
+    version              : $Revision: 1.3 $
  http://www.capisuite.org
 
  Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
