@@ -12,7 +12,7 @@
 #         -----------------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.6 $
+#    version              : $Revision: 1.7 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -93,6 +93,9 @@ try:
     datafilename = control.get("GLOBAL","filename")
     if not datafilename:
         raise capifaxwm.CSConfigError
+    # color fax:
+    if os.path.splitext(datafilename)[1].lower()==".cff":
+	fileext="cff"
     basename=datafilename[:datafilename.rindex('.')+1]
     if fileext=="wav":
 	capifaxwm.ConvertAudio2Sox(datafilename,basename+fileext,soxvolume)

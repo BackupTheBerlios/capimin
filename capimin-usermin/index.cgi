@@ -41,7 +41,7 @@ elif (capifaxwm.checkfaxuser(webmin.remote_user)==0):
 else:
 
     print '<form action="newfax.cgi" method="POST"><input type="hidden" name="faxcreate" value="new"><input type=SUBMIT value="Newfax"></form>'
-    
+    print '&nbsp;<b> Do not edit/forward a fax, if you use colored faxes</b>'
     print '\n<hr>\n'
     if not OldWebminpy and webmin.userconfig.has_key('show_list'):
 	show_lists = webmin.userconfig['show_list'].split(',',5)	

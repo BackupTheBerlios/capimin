@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.8 $
+#    version              : $Revision: 1.9 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -171,7 +171,11 @@ def removejob(user,jobid,cslist):
     if cslist!="faxdone" and cslist!="faxfailed":
 	datafile=control.get("GLOBAL","filename")
     else:
-	datafile=qpath+job[:-3]+"sff"
+	# color fax:
+	fileext="sff"
+        if os.path.splitext(datafilename)[1].lower()==".cff":
+	    fileext="cff"
+	datafile=qpath+job[:-3]+fileext
     if not datafile:
         return -1
     try:    
