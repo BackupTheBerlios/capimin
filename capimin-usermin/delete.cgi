@@ -33,7 +33,7 @@ def local_header():
     header_shown=1
 
 
-def show_askform(formjoblist):
+def show_askform(formjoblist,actionpage="delete.cgi",returnpage="index.cgi"):
     # raise CSInternalError, the checks are and should be done befere this function is called
     # (e.g. to give the user a better error message)
     if not formjoblist:
