@@ -39,7 +39,7 @@ try:
 	os.chown(qpath+capifaxwm.faxnextfile,userstat[2],userstat[3])
         print "<p> permission changed (owner and group)</p>"
     else:
-	print "<p> you are already owning the file, no changes made</p>"
+	print "<p> you are already owning the file</p>"
 
 except "NoAccess", emsg:
     print emsg
