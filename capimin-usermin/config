@@ -8,3 +8,4 @@ allow_faxnext_chown=1
 remove_gdirs=1
 noprefs=0
 allow_dialprefix_choose=1
+ogg_download=2

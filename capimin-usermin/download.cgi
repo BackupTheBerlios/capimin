@@ -45,6 +45,9 @@ soxvolume="1"
 intfaxformat=0
 intcfaxformat=0
 intvoiceformat=0
+
+oggPermission = wm_pytools.ExtractIntConfig(webmin.config.get('ogg_download'),0,0,2)
+
 if not capifaxwm._OldWebminpy and webmin.userconfig:
     soxvolume = str(wm_pytools.ExtractFloatConfig(webmin.userconfig.get('sox_volume'),soxvolume,0))
     intfaxformat = wm_pytools.ExtractIntConfig(webmin.userconfig.get('fax_download'),0,0,3)
@@ -78,6 +81,8 @@ try:
         jobfile="fax-"+jobid+".txt"
         fileext=faxformat
     elif qtype=="voicereceived":
+        if oggPermission==0 and voiceformat=="ogg":
+            raise capifaxwm.CSConvError("Sorry, Ogg Vorbis download is not enabled")
         qpath=os.path.join(capifaxwm.UsersVoice_Path,webmin.remote_user,"received")+os.sep
         jobfile="voice-"+jobid+".txt"
         fileext=voiceformat
@@ -104,7 +109,7 @@ try:
     basename=datafilename[:datafilename.rindex('.')+1]
     if fileext=="wav" or fileext=="ogg":
         rate=None
-        if fileext=="ogg":
+        if fileext=="ogg" and oggPermission==2:
             rate=32000
         capifaxwm.ConvertAudio2Sox(datafilename,basename+fileext,soxvolume,rate)
         datafilename = basename+fileext
