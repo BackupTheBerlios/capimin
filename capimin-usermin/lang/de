@@ -12,6 +12,9 @@ index_download=Download
 index_1hlater=1h sp&auml;ter
 index_chnagesend=&Auml;ndern & Senden
 index_newfax=Neues Fax
+index_sendq_title=Faxausgang
+
+capimin_help=Hilfe
 
 csfax_user=Benutzer
 csfax_nocallerid=unbekannt

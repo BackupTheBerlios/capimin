@@ -18,7 +18,7 @@
 # Uses functions from CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.25 $
+#    version              : $Revision: 1.26 $
 # http://www.capisuite.de
 
 # Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
@@ -62,7 +62,7 @@ else:
     for ls in show_lists:
         l=int(ls)
         if l==0:
-            print "<p><b> %s </b></p>" % webmin.hlink("Send Queue","sendlist")
+            print "<p><b> %s </b></p>" % webmin.hlink(webmin.text['index_sendq_title'],"sendlist")
             capimin_lists.ShowSend3(webmin.remote_user)
             print "<hr>"
         elif l==1:

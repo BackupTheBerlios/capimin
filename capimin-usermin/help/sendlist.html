@@ -1,24 +1,48 @@
 <header>Editing the fax send queue</header>
 <p>You can modify your outgoing fax by directly changing the values in the form.<br>
-To commit this changes, select the fax by clicking in the checkboxes (left on the list)<br>
-and then press button &quot;change&quot;.</p>
-<p><b>More Options:</b></p>
-<p><i>Select all</i> and <i>Invert selection</i><br>
+To commit this changes, select the fax by clicking in the checkboxes (left on the list) and then press button
+&quot;change&quot;.</p>
+<p><b>List columns:</b><br>
+<a href="#checkbox">Checkboxes</a>&nbsp;<a href="#id">ID</a>&nbsp;<a href="#number">Faxnumber</a>&nbsp;<a href="#addressse">Addressee</a>&nbsp;
+<a href="#tries">Tries</a>&nbsp;<a href="#starttime">Next try</a>&nbsp;<a href="#subject">Subject</a><br>
+<b>Commands:</b><br>
+<a href="#selectall">Select All</a>&nbsp;<a href="#selectall">Invert selection</a>&nbsp;<a href="#change">Change</a>&nbsp;<a href="#changesend">Change
+&amp; Send</a>&nbsp;<a href="#1hlater">1hlater</a>&nbsp;<a href="#delete">Delete</a><br>
+</p>
+<p><a name="checkbox"></a><i>Checkboxes</i><br>
+Here you can select the fax jobs you want to modify/delete (the action is chosen by the command buttons described below)</p>
+<p><a name="id"></a><i>ID</i><br>
+Every Job (fax/voice) has its own unique id. The id is created and increased automatically when you create new fax/a
+fax/voice call is received</p>
+<p><a name="number"></a><i>Fax number</i><br>
+Destination fax number. Capimin allows you to use the following helper chars: +-()/ and space (empty) char.<br>
+If a dial prefix is set in the CapiSuite config, it will be added to the number you see in the list.</p>
+<p><a name="addressse"></a><i>Addressee</i><br>
+Name or description for the address. (for information only, has currently no other use in CapiSuite)</p>
+<p><a name="tries"></a><i>Tries</i><br>
+Shows, how many times CapiSuite has tried to send the fax (the maximum number of tries before the fax is copy to the
+failed dir, is set in the CapiSuite config</p>
+<p><a name="starttime"></a><i>Next try</i><br>
+Here you can read/set the send time of the fax. The date values (year, month, day) must be set, if hour and/or minute is
+missing, the will be set to &quot;0&quot;</p>
+<p><a name="subject"></a><i>Subject</i><br>
+Here you can read/set a subject/description for the fax job.</p>
+<p><a name="selectall"></a><i>Select all</i> and <i>Invert selection</i><br>
 JavaScript helper functions to select all faxes or invert your current selection<br>
 (JavaScript must be enabled in your browser to use it)</p>
-<p><i>Change</i><br>
+<p><a name="change"></a><i>Change</i><br>
 changes the selected faxes.<br>
-Note: If you don't have any faxes selected (with the checkboxes) but you have edited<br>
-some data, nothing will change.</p>
-<p><i>Change &amp; Send</i><br>
+Note: If you don't have any faxes selected (with the checkboxes) but you have edited some data, nothing will change.</p>
+<p><a name="changesend"></a><i>Change &amp; Send</i><br>
 Applies the changes made to the selected faxes and sends them immediately (changes the start time<br>
 to the current time, so that capisuite will send the faxes, when it checks the queue)</p>
-<p><i>1h later</i><br>
-Add one hour to the start time for the selected faxes.<br>
-<b>Note:</b> This function doesn't work correct (at least with Python 2.2.1/SuSE 8.1)<br>
-When changing the time for a fax which is in another daylight saving time (DST) than the current day,<br>
-then this function adds/subtracts also the DST changes<br>
-No Problems with SuSE 9.0 and Python 2.3/ Win32 and Python 2.3</p>
-<p><i>Delete</i><br>
+<p><a name="delete"></a><i>Delete</i><br>
 removes the selected files from the send queue</p>
+<p><a name="1hlater"></a><i>1h later</i><br>
+Add one hour to the start time for the selected faxes.<br>
+<i>Note:</i> This function doesn't work correct (at least with Python 2.2.1/SuSE 8.1)<br>
+When changing the time for a fax which is in another daylight saving time (DST) than the current day, then this function
+adds/subtracts also the DST changes<br>
+No Problems with SuSE 9.0 and Python 2.3/ Win32 and Python 2.3</p>
 <hr>
+
