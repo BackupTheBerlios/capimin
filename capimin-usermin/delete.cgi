@@ -23,6 +23,16 @@ remove_gdirs=0
 jobid = None
 qtype = None
 
+header_shown=0
+def local_header():
+    global header_shown
+    if header_shown==1:
+        return
+    webmin.header("Capisuite - change job",  config=None, nomodule=1)
+    print "<hr><br>"
+    header_shown=1
+
+
 def show_askform(fromjoblist):
     # raise CSInternalError, the checks are and should be done befere this function is called
     # (e.g. to give the user a better error message)
@@ -30,9 +40,9 @@ def show_askform(fromjoblist):
         raise capifaxwm.CSInternalError("show_askform()")
     if not isinstance(fromjoblist, list):
         raise capifaxwm.CSInternalError("show_askform()")
-    webmin.header("Capisuitefax - remove job(s)", config=None, nomodule=1)
-    print "<hr><br>"
-    
+
+    local_header()
+        
     print '<table border="1">'
     print ' <tr bgcolor=#%s><th>&nbsp;&nbsp;&nbsp;Remove (delete/abort) %s job(s) ?&nbsp;&nbsp;&nbsp;</th></tr>  ' % (webmin.tb,len(fromjoblist))
     print ' <tr bgcolor=#%s><td>' % webmin.cb
@@ -52,15 +62,14 @@ def remove_jobs(fromjoblist):
     if not isinstance(fromjoblist, list):
         raise capifaxwm.CSInternalError("remove_jobs()")
 
-    webmin.header("Capisuitefax - remove job", config=None, nomodule=1,header='<meta http-equiv="refresh" content="20; URL=index.cgi">')
-    print "<hr><p>"
     for cjob in fromjoblist:
         try:
             capifaxwm.removejob(webmin.remote_user,cjob,qtype)    
-            print '<b> Job with ID %s removed </b><br>' % cjob
         except capifaxwm.CSRemoveError,e:
+            local_header()
             print "<br><b>%s: %s - JobID: %s </b><br>" %(webmin.text.get('error','').upper(),cgi.escape(e.message,1),cjob)
-    print '</p><p><i> Returning to index page in 20 seconds...</i></p>'                   
+    if header_shown==0:
+        webmin.redirect()
 
 try:
     # get the cgi data
@@ -94,24 +103,21 @@ try:
     
     
 except capifaxwm.CSRemoveError,e:
-    webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
-    print "<hr><br>"
+    local_header()
     print "<p><b>%s: %s</b></p>" %(webmin.text.get('error','').upper(),cgi.escape(e.message,1))
 except "NoAccess":
-    webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
-    print "<hr><br>"
+    local_header()
     print "<p><b> Sorry, you don't have the permisson for removing the job<br> Ask your (Usermin) Admin about it</b></p>"
 except "NoneSelected":
-    webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
-    print "<hr><br>"
+    local_header()
     print "<p><b> No job selected</b></p>"
 except capifaxwm.CSConfigError:
-    webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
-    print "<hr><br>"
+    local_header()
     print "<p><b> %s: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
 except capifaxwm.CSInternalError,e:
-    webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
-    print "<hr><br>"
+    local_header()
     print "<p><b>Internal Error: %s</b></p>" %(cgi.escape(e.message,1))
-print "<p>&nbsp;</p><hr>"
-webmin.footer([("", "module index")])
+
+if header_shown==1:
+    print "<p>&nbsp;</p><hr>"
+    webmin.footer([("", "module index")])
