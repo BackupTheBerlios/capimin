@@ -1,14 +1,16 @@
-# Most/all fax functions in this file are  form (modified for html/webmin):
+# Mo>Jst/all fax functions in this file are  form (modified for html/webmin):
 #             capisuitefax - capisuite tool for enqueuing faxes
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.2 $
+#    version              : $Revision: 1.3 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
+#
+# for the rest: http://capimin.berlios.de email: cibi@users.berlios.de
 
 
 import webmin
@@ -20,33 +22,113 @@ webmin.init_config()
 UsersFax_Path=""
 UsersVoice_Path=""
 
-tempdir="/tmp"
-
+listpath = None
 CAPI_config=None
+#faxsend = [0,'fax', 0,'fax_user_dir','sendq']
+#faxreceived = [0,'fax', 0,'fax_user_dir','received']
+#faxfailed = [0,'fax', 1,'spool_dir','failed']
+#faxdone = [0,'fax', 1,'spool_dir','done']
+#voicereceived = [1,'voice',0,'voice_user_dir','received']
 
+
+
+# [fileprefix,userprefix,pathtype,dirname]
+# fileprefix: "fax" or "voice"
+# userprefix: 0=no,files in userspecific dir , 1=yes (e.g. "fax-0.sff","user-fax-0.sff")
+# pathtype: key for "listpath" dictionary
+listtypes = {'faxsend':('fax', 0,'fax_user_dir','sendq'),
+	'faxreceived':('fax', 0,'fax_user_dir','received'),
+	'faxfailed':('fax', 1,'spool_dir','failed'),
+	'faxdone':('fax', 1,'spool_dir','done'),
+	'voicereceived':('voice',0,'voice_user_dir','received')}
+
+# @brief Generates the path for a list/queue, capiconfig_init(...) pre-required
+#
+# As it makes only sence to call this function, after everything is checked, i skipped
+# the config check here.
+# if listtypes[cslisttype][1], the userprefix, is set to 0, an additional user dir
+# will be added, but only when the user param is set  (e.g. path/userdir/listdir)
+#
+# @cslisttype must be a key from dict "listtype"
+# @user default is an empty string
+#
+# @return Generated path is returned, otherwise an exception is raised
+def BuildListPath(cslisttype,user=""):
+    
+    def checkinfo(listinfo):
+	if type(listinfo) is not tuple: return None
+	if len(listinfo)!=4: return None
+	if type(listinfo[0]) is not str: return None
+	if type(listinfo[1]) is not int: return None
+	if type(listinfo[2]) is not str: return None
+	if type(listinfo[3]) is not str: return None
+	return 1
+	
+    if not listtypes.has_key(cslisttype) or not checkinfo(listtypes[cslisttype]):
+	raise "CSPath","BuildListPath: invalid listtype"
+
+    path=listpath[listtypes[cslisttype][2]]
+    if listtypes[cslisttype][1]==0 and user!="":
+	path=os.path.join(path,user,listtypes[cslisttype] [3] )+os.sep
+    else:
+        path=os.path.join(path,listtypes[cslisttype] [3] )+os.sep
+    return path
 
 def capiconfig_init(file=""):
-    global CAPI_config,UsersFax_Path,UsersVoice_Path
+    global CAPI_config,UsersFax_Path,UsersVoice_Path,listpath
+    UsersFax_Path=""
+    UsersVoice_Path=""
+    GlobalSpool_Path=""
+    listpath = None
+
     CAPI_config=cs_helpers.readConfig(file)
     if not CAPI_config:
-	UsersFax_Path=""
-	UsersVoice_Path=""
 	return -1
-    UsersFax_Path=cs_helpers.getOption(CAPI_config,"","fax_user_dir")
+    UsersFax_Path=cs_helpers.getOption(CAPI_config,"","fax_user_dir",default="")
     if UsersFax_Path=="":
 	return -1
-    # optional value:
-    UsersVoice_Path=cs_helpers.getOption(CAPI_config,"","voice_user_dir")
-
-# checks the values set by capiconfig_init(file="")
-# unlike capiconfig_init it doesn't load any extern (e.g. config file) values 
-# and doesn't reset them if any of the config settings is false
-def checkconfig(checkvoice=0):
-    global CAPI_config,UsersFax_Path,UsersVoice_Path
-    if not CAPI_config or not UsersFax_Path:
-       return -1
-    if (checkvoice==1 or checkvoice=="voice") and not UsersVoice_Path:
+    GlobalSpool_Path=cs_helpers.getOption(CAPI_config,"","spool_dir",default="")
+    if GlobalSpool_Path=="":
 	return -1
+    # optional value:
+    UsersVoice_Path=cs_helpers.getOption(CAPI_config,"","voice_user_dir",default="")
+    listpath = {"fax_user_dir":UsersFax_Path,"spool_dir":GlobalSpool_Path,"voice_user_dir":UsersVoice_Path}
+
+# @brief checks the values set by capiconfig_init(...)
+#
+# unlike capiconfig_init it doesn't load any extern (e.g. config file) values
+# and doesn't reset them if any of the config settings is false
+#
+# @checkvoice can be 1 or "voice" if the config should be checked for the corret voice settings
+#
+# @return -1 if check failed (false config/settings), other cases not defined
+def checkconfig(checkvoice=0):    
+    try:
+	if not CAPI_config or not UsersFax_Path or not listpath:
+	    return -1
+        
+	if (checkvoice==1 or checkvoice=="voice") and not UsersVoice_Path:
+	    return -1
+        
+    
+        # theoretical, listpath should always have at least an empty key here,
+        # but to be sure: (especially, because other function might assume the existents)
+	if not listpath.has_key('fax_user_dir') or not listpath.has_key('spool_dir'):
+	    return -1
+	if listpath['fax_user_dir']=="" or listpath['spool_dir']=="":
+	    return -1
+    
+    
+	if checkvoice==1 or checkvoice=="voice":
+    	    # theoretical, listpath should always have at least an empty voice_user_dir here,
+	    # but to be sure: (especially, because other function might assume the existents)
+	    if not listpath.has_key('voice_user_dir'):
+		return -1
+	    if listpath['voice_user_dir']=="":
+		return -1
+    except:
+	# handle every exception as an error in the configuration
+	return -1	
     
 # check if the user is a valid capisuitefax user
 # set verbose=1 if you want a (html formated) error messages to be printed out
@@ -58,114 +140,6 @@ def checkfaxuser(user,verbose=0):
 	return 0
     else:
 	return 1
-
-
-def showfaxlist(user,changepage="change.cgi",abortpage="abort.cgi"):
-    if (checkconfig() == -1) or (checkfaxuser(user,1) == 0):
-        raise CSConfigError
-
-    sendq=UsersFax_Path    
-    sendq=os.path.join(sendq,user,"sendq")+"/"
-    #print '<p><b> %s: %s</b></p>' % (webmin.text['csfax_user'],user)
-    print '<table border="1">\n <tr bgcolor=#%s>' % webmin.tb
-    print '   <th>%s</th><th>%s</th><th>%s</th><th>%s</th>' %  (webmin.text['index_id'],webmin.text['index_dialstring'],webmin.text['index_addressee'],webmin.text['index_tries'])
-    print '   <th>%s</th><th>%s</th><th><b>&nbsp;</b></th><th>%s</th>\n </tr>' % (webmin.text['index_nexttry'],webmin.text['index_subject'],webmin.text['index_toabort'])
-    
-    files=os.listdir(sendq)
-    files=filter (lambda s: re.match("fax-.*\.txt",s),files)
-
-    for job in files:
-	control=cs_helpers.readConfig(sendq+job)
-	faxid = re.match("fax-([0-9]+)\.txt",job).group(1)
-	starttime=(time.strptime(control.get("GLOBAL","starttime")))[0:8]+(-1,)
-
-	print ' <tr bgcolor=#%s>\n  <form METHOD="POST" ACTION="%s">' % (webmin.cb,changepage)	
-        print "   <td>&nbsp;%s</td>" % faxid
-	print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","dialstring")
-	print '   <td><input TYPE="TEXT" NAME="formDialAddressee" SIZE="15" MAXLENGTH="40" value="%s"></td>' % cs_helpers.getOption(control,"GLOBAL","addressee","")
-	print "   <td>&nbsp;%s</td>" % control.get("GLOBAL","tries")
-	
-	print '   <td nowrap><input name="year" type="text" size="4" maxlength="4" value="%s">-<select name="month">' % starttime[0]
-	for i in range(1,13):
-	    selected =""
-    	    if i==starttime[1]:
-		selected=' selected="selected"'
-	    print '        <option value="%s"%s>%s</option>' % (i,selected,webmin.text["smonth_"+str(i)])
-	print '      </select>-<input name="day" size="2" maxlength="2" value="%s">' % starttime[2]
-	print '        &nbsp;&nbsp;<input name="hour" size="2" maxlength="2" value="%s">:<input name="min" size="2" maxlength="2" value="%02d"></td>' % (starttime[3],starttime[4])
-	#print '   <td><input TYPE="TEXT" NAME="datetime" SIZE="8" MAXLENGTH="12" value="'+time1+'">'
-	#print '       <input TYPE="TEXT" NAME="date" SIZE="10" MAXLENGTH="16" value="'+time2+'"></td>'
-	
-	print '   <td><input TYPE="TEXT" NAME="formSubject" SIZE="30" MAXLENGTH="40" value="%s"></td>' % cs_helpers.getOption(control,"GLOBAL","subject","")
-	print '   <input type="hidden" name="formFaxID" value="%s">' % faxid
-	print '   <input type="hidden" name="formDialString" value="%s">' % control.get("GLOBAL","dialstring")
-	print '   <input type="hidden" name="formTries" value="%s">' % control.get("GLOBAL","tries")
-	print '   <input type="hidden" name="formOrgDate" value="%s">' % control.get("GLOBAL","starttime")
-	print '   <td><input TYPE="SUBMIT" VALUE="%s"></td>\n  </form>' % webmin.text['index_change']
-	print '   <td>&nbsp;&nbsp;<i><a href="%s?jobid=%s">%s</a></i></td>' % (abortpage,faxid,webmin.text['index_toabort'])
-#	print '  <form ACTION="%s"><input type="hidden" name="jobid" value="%s">' % (abortpage,faxid)
-#	print '   <td><input TYPE="SUBMIT" VALUE="%s"></td>\n  </form>' % webmin.text['index_toabort']
-	print ' </tr>'
-
-
-    print "</table>"
-
-# List received list for fax and voice calls
-# fileprefix can be "fax" or "voice". this is also used to get the right dir path
-def showreceivedlist(user,fileprefix="fax",forwardopt=0,newpage="newfax.cgi",dldpage="",removepage=""):
-    if (checkconfig(fileprefix) == -1) or (checkfaxuser(user,1) == 0):
-        raise CSConfigError
-    
-    path=""
-    qtype=""
-    if fileprefix =="fax":
-	path = UsersFax_Path	
-	qtype = "faxreceived"
-    elif fileprefix == "voice":
-	path = UsersVoice_Path
-	qtype = "voicereceived"
-    else:
-	raise CSConfigError
-        
-    path=os.path.join(path,user,"received")+"/"
-    print '<table border="1">\n <tr bgcolor=#%s>' % webmin.tb
-    print '   <th>%s</th><th>From</th><th>To (MSN)</th><th>Time</th><th>ISDN cause</th><th>File</th>' %  (webmin.text['index_id'])
-    if forwardopt==1:
-	print '   <th>&nbsp;</td>'
-    if removepage:
-	print '   <th>&nbsp;</td>'
-    print ' </tr>'
-    
-    files=os.listdir(path)
-    files=filter (lambda s: re.match(fileprefix+"-.*\.txt",s),files)
-
-    for job in files:
-	print ' <tr bgcolor=#%s>' % webmin.cb
-	control=cs_helpers.readConfig(path+job)
-	jobid = re.match(fileprefix+"-([0-9]+)\.txt",job).group(1)
-        print "  <td>&nbsp;%s</td>" % jobid
-	print "  <td>&nbsp;%s</td>" % control.get("GLOBAL","call_from")
-	print "  <td>&nbsp;%s</td>" % control.get("GLOBAL","call_to")
-	print "  <td nowrap>&nbsp;%s</td>" % control.get("GLOBAL","time")
-	print "  <td>&nbsp;%s</td>" % control.get("GLOBAL","cause")
-
-	if forwardopt==1:
-	    print '  <form METHOD="POST" ACTION="%s"><input type="hidden" name="formfaxid" value="%s"><input type="hidden" name="qtype" value="faxreceived">\
-<input type="hidden" name="faxcreate" value="forward"><td><input TYPE="SUBMIT" VALUE="%s"></td></form>' % (newpage,jobid,webmin.text['index_forward'])
-
-	if dldpage:
-#	    print '  <form METHOD="POST" ACTION="%s"><input type="hidden" name="jobid" value="%s">' % (dldpage,jobid)
-#	    print '   <input type="hidden" name="qtype" value="%s"><td><input TYPE="SUBMIT" VALUE="%s"></td></form>' % (qtype,webmin.text['index_download'])
-	    print '   <td><b><a href="%s?jobid=%s&qtype=%s">%s</a></b></td>' % (dldpage,jobid,qtype,webmin.text['index_download'])
-	else:
-	    print "  <td>&nbsp;%s</td>" % control.get("GLOBAL","filename") # TODO?:change it to file name only
-
-	if removepage:
-#	    print '   <form ACTION="%s"><input type="hidden" name="jobid" value="%s"><input type="hidden" name="qtype" value="%s">' % (removepage,jobid,qtype)
-#	    print '    <td><input TYPE="SUBMIT" VALUE="%s"></td></form>' % webmin.text['delete']
-	    print '   <td>&nbsp;&nbsp;<i><a href="%s?jobid=%s&qtype=%s">%s</a></i></td>' % (removepage,jobid,qtype,webmin.text['delete'])
-	print "</tr>"
-    print "</table>"
 
 #will be replaced by a common delete job function
 def removejob(user,jobid,qtype):
