@@ -15,8 +15,6 @@ import webmin
 import capifaxwm
 import cs_helpers,os, re,getopt, cgi, time, fcntl, shutil, tempfile
 
-webmin.header("Capisuitefax - create/forward/answer fax", config=None, nomodule=1)
-print "<hr>"
 
 subject = ""
 addressee = ""
@@ -34,6 +32,10 @@ fqtype=""
 
 capifaxwm.capiconfig_init()
 
+webmin.header("Capisuitefax - create/forward/answer fax", config=None, nomodule=1)
+print "<hr>"
+
+
 # Converts global string values to empty strings, if they are not assigned (None)
 # used for the form output
 def NoneStringToEmpty():
@@ -42,6 +44,17 @@ def NoneStringToEmpty():
     if addressee==None: addressee=""
     if dialstring==None: dialstring=""
 
+
+def rmfile(file):
+    """ remove a file, don't throw if it doesn't exists
+    or fail to remove
+    """
+    if not file: return -1
+    try:
+	os.remove(file)
+    except:
+	return -1
+    
 
 # read a capisuitefax file (e.g. from the received dir)
 # and copy the fax file to a tmp location (in case the file is deleted, before it is copied in the send queue)
@@ -191,28 +204,33 @@ try:
 	    tmpjobfile = "ul_"+tmpjobfile #[1:]
 	    outFile = open(newpath+tmpjobfile,"wb")
 	    outFile.write(upfile.file.read())
-	    outFile.close()
-	    toremovefile = None
-	    if not upfile.filename.endswith("sff"):
-		# --- from capisuitefax ---
+	    outFile.close()	    
+    	    if not upfile.filename.endswith("sff"):
 		t=os.popen("file -b -i "+newpath+tmpjobfile+" 2>/dev/null")
-		filetype=t.read()
+		filetype=t.read()		
 		if (t.close()):
 		    raise capifaxwm.CSConvError("can't execute program \"file\"")
-		if (not re.search("application/postscript",filetype)):		    
-    		# ---end from capisuitefax ---
-		    print "<p><b False File format - currently only sff files are supported </b></p>"	    
+		fileext=""
+		if (re.search("application/postscript",filetype)):
+		    fileext="ps"
+		elif (re.search("application/pdf",filetype)):
+		    fileext="pdf"
+		else:
+		    print "<p><b> False File format - currently only sff/ps/pdf files are supported </b></p>"	    
         	    raise capifaxwm.FormInputError
-		capifaxwm.ConvertPS2SFF(newpath+tmpjobfile,newpath+"out-"+tmpjobfile)
-		toremovefile=tmpjobfile
-		tmpjobfile ="out-"+tmpjobfile 		
+		if fileext=="pdf":
+		    capifaxwm.ConvertPDF2PS(newpath+tmpjobfile,newpath+"ps_"+tmpjobfile)
+		    rmfile(newpath+tmpjobfile)
+		    tmpjobfile="ps_"+tmpjobfile
+		
+		capifaxwm.ConvertPS2SFF(newpath+tmpjobfile,newpath+"out_"+tmpjobfile)
+		rmfile(newpath+tmpjobfile)
+		tmpjobfile ="out_"+tmpjobfile 		
 
 	    capifaxwm.sendfax(webmin.remote_user,dialstring,newpath+tmpjobfile,timec,addressee,subject)
 	    # oh no, another try....
 	    try:
-		os.unlink(newpath+tmpjobfile)
-		if toremovefile:
-		    os.unlink(newpath+toremovefile)
+		os.unlink(newpath+tmpjobfile)		
 	    except:
 		print "<p><b> Failed to remove tempory upload file</b></p>"
 	else:	

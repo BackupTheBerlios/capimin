@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.13 $
+#    version              : $Revision: 1.14 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -313,7 +313,7 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
             dialstring=prefix+dialstring
     
     if (not os.access(sourcefile,os.R_OK)):
-	print "<p><b>ERROR: cannot read fax source file:%</b></p>" % faxfile
+	print "<p><b>ERROR: cannot read fax source file:%s</b></p>" % sourcefile,
 	return -1
     sendq = os.path.join(UsersFax_Path,user,"sendq")+"/"
     newname=cs_helpers.uniqueName(sendq,"fax",filetype)
@@ -401,6 +401,16 @@ def ConvertCFF2PDF(cfffile,pdffile):
     raise NotImplementedError
     if not cfffile or not pdffile:
 	raise CSConvError("False parameter (no in and/or outputfile)")
+
+    
+
+def ConvertPDF2PS(pdffile,psfile):
+    if not pdffile or not psfile:
+	raise CSConvError("False parameter (no in and/or outputfile)")
+    
+    ret=os.spawnlp(os.P_WAIT,"pdf2ps","pdf2ps",pdffile,psfile)
+    if (ret or not os.access(psfile,os.F_OK)):
+	raise CSConvError("Can't convert pdf to ps. pdf2ps not installed?")
 
 def ConvertPS2SFF(psfile,sfffile):
     if not psfile or not sfffile:
