@@ -1,0 +1,47 @@
+Capimin - a Usermin module to manage CapiSuite
+==============================================
+
+See the website at http://capimin.berlios.de for Help
+
+ 
+Requirements
+------------
+- Python >=2.2
+- Usermin / Webmin (tested on 1.110/1.04, SuSE Linux 8.1)
+- Capisuite (tested with 0.4.3)
+    sox (12.17.3, 12.17.4 recommend), sfftobmp, gs are needed if you want to up/download files in non
+    CAPI-formats, as described in the CapiSuite documentation.
+- Python-webmin, modified Version 3 required
+- optional: HTMLgen python module (needed for the Webmin msc theme)
+
+Install
+-------
+See the website at http://capimin.berlios.de for Help
+
+
+Capimin and external Copyright 
+------------------------------
+ Written by Carsten <cibi@users.berlios.de>
+ Copyright (C) 2003,2004 Carsten (http://capimin.berlios.de)
+ 
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; version 2 of the License. 
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+ Uses functions from/based on CapSuite (cs_helper.py, capisuitefax):
+    copyright            : (C) 2002 by Gernot Hillier
+    email                : gernot@hillier.de
+    version              : $Revision: 1.1 $
+ http://www.capisuite.org
+
+ Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
+ Copyright (C) 2002 Cendio Systems AB (http://www.cendio.se)

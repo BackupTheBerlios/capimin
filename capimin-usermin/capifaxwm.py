@@ -14,7 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-# Uses functions from CapSuite (cs_helper.py, capisuitefax):
+# Uses functions from/based on CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
 # http://www.capisuite.de

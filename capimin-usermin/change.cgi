@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Written by Carsten <cibi@users.berlios.de>
 # Copyright (C) 2003,2004 Carsten (http://capimin.berlios.de)

@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+#
 # Written by Carsten <cibi@users.berlios.de>
 # Copyright (C) 2003,2004 Carsten (http://capimin.berlios.de)
 # 
@@ -15,9 +16,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-# Coding style: Max linewidth 120 chars
-# - in change, not all lines fit currently 120
-# 
+#
+# Coding style: Max linewidth 120 chars, 4 spaces per tab
+#
 
 
 

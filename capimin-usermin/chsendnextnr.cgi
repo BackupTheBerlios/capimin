@@ -1,13 +1,26 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
-# chsendnextnr.cgi - change the permission if the fax-nextnr in the
-# user sendq dir
+# Written by Carsten <cibi@users.berlios.de>
+# Copyright (C) 2003,2004 Carsten (http://capimin.berlios.de)
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License. 
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
 #
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-# http://capimin.berlios.de email: cibi@users.berlios.de
+# Coding style: Max linewidth 120 chars, 4 spaces per tab
+#
+
+
 
 
 import sys
@@ -27,7 +40,8 @@ try:
     else:
         canchange = 0
     if canchange != 1:
-        raise "NoAccess","<p><b> Sorry, you are not allowed to chown "+faxnextfile+" in the sendq dir<br>Ask your (Usermin) admin for the permission </p></b>"
+        raise "NoAccess","<p><b> Sorry, you are not allowed to chown "+faxnextfile+" in the sendq dir<br>"\
+              "Ask your (Usermin) admin for the permission </p></b>"
 
     qpath=os.path.join(capifaxwm.UsersFax_Path,webmin.remote_user,"sendq")+os.sep
 

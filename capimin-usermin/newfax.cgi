@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+#
 # Written by Carsten <cibi@users.berlios.de>
 # Copyright (C) 2003,2004 Carsten (http://capimin.berlios.de)
 # 
@@ -16,9 +17,8 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #
-# Coding style: Max linewidth 120 chars (in progress...)
-#               4 spaces per tab
-
+# Coding style: Max linewidth 120 chars, 4 spaces per tab
+#
 
 import sys
 sys.path.append("..")
@@ -100,7 +100,7 @@ def importqfax(jobid,qtype):
 
     jobbinfile = control.get("GLOBAL","filename")
     if jobbinfile==None: jobbinfile="" # to avoid exception with splittext, check done below with filetypedot
-    filetypedot = os.path.splitext(jobbinfile)[1].lower() # splittext always returns a list of 2, so no "None" check needed     
+    filetypedot = os.path.splitext(jobbinfile)[1].lower() # splittext returns a list of 2, so no "None" check needed     
     if not filetypedot:
         print "<p><b> Error in jobfile: no data/invalid filename found (jobid: %s )</b></p>" % jobid
         raise capifaxwm.CSConfigError
@@ -354,7 +354,8 @@ try:
 
 except capifaxwm.CSConfigError:
     local_header()
-    print "<p><b>%s: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
+    print "<p><b>%s: False settings/config - please start from the main module page<br>"\
+          " and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
 except "NoAccess":
     local_header()
     print "<p><b> You don't have write access to an important file (%s)in your sendq<br>" % capifaxwm.faxnextfile
@@ -369,7 +370,8 @@ except capifaxwm.FormInputError,e:
     shownewform(fjobid,fqtype)
 except capifaxwm.CSInternalError,err:
     local_header()
-    print "<p><b>%s: Inernal error (e.g. function called with wrong params): %s </b></p>" % (webmin.text.get('error','').upper(),err)
+    print "<p><b>%s: Inernal error (e.g. function called with wrong params): %s </b></p>" %\
+          (webmin.text.get('error','').upper(),err)
 except "Warning",e:
     local_header()
     print "<p><b>Warning/Info: %s </b></p>" % e
