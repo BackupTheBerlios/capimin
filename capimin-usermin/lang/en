@@ -1,0 +1,16 @@
+index_title=Capisuite queue info
+index_id=ID
+index_addressee=Address
+index_dialstring=Faxnumber
+index_tries=Tries
+index_nexttry=Next try
+index_subject=Subject
+index_toabort=Abort
+index_forward=Forward
+index_change=Change
+index_download=Download
+
+csfax_user=User
+
+newfax_senddate=Run on date
+newfax_sendtime=Run at time

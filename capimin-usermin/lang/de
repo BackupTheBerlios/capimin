@@ -1,0 +1,16 @@
+index_title=Capisuite Warteschlangen-Übersicht
+index_id=ID
+index_addressee=Adressat
+index_dialstring=FaxNummer
+index_tries=Versuche
+index_nexttry=N&auml;chster Versuch
+index_subject=Betreff
+index_toabort=Abbrechen
+index_forward=Weiterleiten
+index_change=&Auml;ndern
+index_download=Download
+
+csfax_user=Benutzer
+
+newfax_senddate=Ausf&uuml;hren am
+newfax_sendtime=Ausf&uuml;hren um

@@ -1,0 +1,7 @@
+name=capisuitefax
+category=
+desc=Capisuite Fax
+longdesc=Manage Capisuite fax queue
+depends=1.04
+version=0.23
+usermin=1
