@@ -34,9 +34,9 @@ else:
 	print "<p><b> Received List: Voice</b></p>"
 	capimin_lists.ShowReceived(webmin.remote_user,fileprefix="voice",dldpage="download.cgi",removepage="abort.cgi")
     print "<p><b> Done List: Fax</b></p>"
-    capimin_lists.ShowGlobal(webmin.remote_user,"faxdone")
+    capimin_lists.ShowGlobal(webmin.remote_user,"faxdone","abort.cgi")
     print "<p><b> Failed List: Fax</b></p>"
-    capimin_lists.ShowGlobal(webmin.remote_user,"faxfailed")
+    capimin_lists.ShowGlobal(webmin.remote_user,"faxfailed","abort.cgi")
     
 print "<p>&nbsp;</p><hr>"		
 webmin.footer([("/", "index")])
