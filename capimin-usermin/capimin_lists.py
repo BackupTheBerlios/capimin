@@ -24,6 +24,7 @@ import webmin
 import os, re, time, string
 import cs_helpers, capifaxwm
 import urllib
+import numsort
 
 capifaxwm.capiconfig_init()
 
@@ -52,6 +53,7 @@ def ShowSend3(user,changepage="change.cgi",formname=""):
     
     files=os.listdir(sendq)
     files=filter (lambda s: re.match("fax-.*\.txt",s),files)
+    files=numsort.sorted_copy(files)
     cindex=0
     for job in files:
         
@@ -156,6 +158,7 @@ def ShowReceived(user,fileprefix="fax",forwardopt=0,newpage="newfax.cgi",dldpage
         return    
     files=os.listdir(path)
     files=filter (lambda s: re.match(fileprefix+"-.*\.txt",s),files)
+    files=numsort.sorted_copy(files)
 
     for job in files:
         print ' <tr bgcolor=#%s>' % webmin.cb
@@ -235,6 +238,9 @@ def ShowGlobal(user,cslist="faxdone",newpage="",dldpage="",removepage="",formnam
         return    
     files=os.listdir(path)
     files=filter (lambda s: re.match(fileprefix+".*\.txt",s),files)
+
+    files=numsort.sorted_copy(files)
+
     for job in files:
         control=cs_helpers.readConfig(path+job)
         jobid = re.match(fileprefix+"([0-9]+)\.txt",job).group(1)
