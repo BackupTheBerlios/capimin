@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.7 $
+#    version              : $Revision: 1.8 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -25,9 +25,12 @@ def ShowSend(user,changepage="change.cgi",newpage="",dldpage="",removepage="abor
     if (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0):
         raise capifaxwm.CSConfigError
 
+    cslist = "faxsend"
+    
     sendq=capifaxwm.UsersFax_Path    
     sendq=os.path.join(sendq,user,"sendq")+"/"
     #print '<p><b> %s: %s</b></p>' % (webmin.text['csfax_user'],user)
+    print '<!-- =================== Show Send queue =================== -->'
     print '<table border="1">\n <tr bgcolor=#%s>' % webmin.tb
     print '   <th>%s</th><th>%s</th><th>%s</th><th>%s</th>' %  (webmin.text['index_id'],webmin.text['index_dialstring'],webmin.text['index_addressee'],webmin.text['index_tries'])
     print '   <th>%s</th><th>%s</th><th><b>&nbsp;</b></th><th>%s</th>\n </tr>' % (webmin.text['index_nexttry'],webmin.text['index_subject'],webmin.text['index_toabort'])
@@ -72,6 +75,7 @@ def ShowSend(user,changepage="change.cgi",newpage="",dldpage="",removepage="abor
         print '   <input type="hidden" name="formTries" value="%s">' % control.get("GLOBAL","tries")
         print '   <input type="hidden" name="formOrgDate" value="%s">' % control.get("GLOBAL","starttime")
         print '   <input type="hidden" name="filetype" value="%s">' % filetype
+        print '   <input type="hidden" name="cslist" value="%s">' % cslist
         print '   <td><input TYPE="SUBMIT" VALUE="%s"></td>\n  </form>' % webmin.text['index_change']
         urlparams = urllib.urlencode({'jobid': jobid, 'qtype': 'faxsend'})
         print '   <td>&nbsp;&nbsp;<i><a href="%s?%s">%s</a></i></td>' % (removepage,urlparams,webmin.text['index_toabort'])
@@ -79,10 +83,10 @@ def ShowSend(user,changepage="change.cgi",newpage="",dldpage="",removepage="abor
 
 
     print "</table>"
-    
+    print '<!-- END================ Show Send queue =================== -->'
     
 
-def ShowSend2(user,changepage="change2.cgi",formname=""):    
+def ShowSend2(user,changepage="change3.cgi",formname=""):    
     if (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0) or not changepage:
         raise capifaxwm.CSConfigError
     
@@ -93,6 +97,7 @@ def ShowSend2(user,changepage="change2.cgi",formname=""):
     sendq=capifaxwm.UsersFax_Path    
     sendq=os.path.join(sendq,user,"sendq")+"/"
     #print '<p><b> %s: %s</b></p>' % (webmin.text['csfax_user'],user)
+    print '<!-- ================== Show New Send queue =================== -->'
     print '<form action=%s method=post name=%s>' % (changepage,formname)
     print '<table border="1">\n <tr bgcolor=#%s>' % webmin.tb
     print '   <th>&nbsp;</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th>' %  (webmin.text['index_id'],webmin.text['index_dialstring'],webmin.text['index_addressee'],webmin.text['index_tries'])
@@ -146,8 +151,9 @@ def ShowSend2(user,changepage="change2.cgi",formname=""):
     print '<input type="hidden" name="cslist" value="%s">' % cslist
     print "<a href='' onClick='document.forms[\"%s\"].cjobid.checked = true; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = true; } return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
     print "&nbsp;&nbsp;<a href='' onClick='document.forms[\"%s\"].cjobid.checked = !document.forms[\"%s\"].cjobid.checked; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = !document.forms[\"%s\"].cjobid[i].checked; } return false'>%s</a>"  % (formname,formname,formname,formname,formname,webmin.text['list_invert'])
-    print '<br><br><input type=submit name=delete value="%s"></form>' % webmin.text['delete']
-
+    print '<br><br><input type=submit name=delete value="%s">&nbsp;&nbsp;<input type=submit name=change value="Cange"></form>' % webmin.text['delete']
+    
+    print '<!-- END================ Show New Send queue =================== -->'
 
 
 # List received list for fax and voice calls
@@ -168,6 +174,8 @@ def ShowReceived(user,fileprefix="fax",forwardopt=0,newpage="newfax.cgi",dldpage
         raise capifaxwm.CSConfigError
     if not formname:
         formname=qtype
+    
+    print '<!-- ================== Show a received list =================== -->'
     
     path=os.path.join(path,user,"received")+"/"
     if removepage:
@@ -214,15 +222,15 @@ def ShowReceived(user,fileprefix="fax",forwardopt=0,newpage="newfax.cgi",dldpage
         print "</tr>"
     print "</table>"
     print '<input type="hidden" name="qtype" value="%s">' % qtype
-    print "<p><a href='' onClick='document.forms[\"%s\"].cjobid.checked = true; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = true; } return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
+    print "<a href='' onClick='document.forms[\"%s\"].cjobid.checked = true; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = true; } return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
     print "&nbsp;&nbsp;<a href='' onClick='document.forms[\"%s\"].cjobid.checked = !document.forms[\"%s\"].cjobid.checked; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = !document.forms[\"%s\"].cjobid[i].checked; } return false'>%s</a>"  % (formname,formname,formname,formname,formname,webmin.text['list_invert'])
     print '<br><br><input type=submit name=delete value="%s">' % webmin.text['delete']
 #    if forwardopt==1:
 #        print '<input type="hidden" name="faxcreate" value="forward">
 #        print '&nbsp;&nbsp;&nbsp;<input type=submit name=forward value="%s">' % webmin.text['index_forward'
-    print '</p></form>'
+    print '</form>'
 
-    
+    print '<!-- END=============== Show a received list =================== -->'
 
 # Show Done/Failed dir for the current user
 def ShowGlobal(user,cslist="faxdone",newpage="",dldpage="",removepage="",formname=""):
@@ -233,7 +241,9 @@ def ShowGlobal(user,cslist="faxdone",newpage="",dldpage="",removepage="",formnam
         raise capifaxwm.CSConfigError
     if not formname:
         formname=cslist
-
+    
+    print '<!-- ================== Show a global list =================== -->'
+    
     path=capifaxwm.BuildListPath(cslist)
     if removepage:
         print '<form action=%s method=post name=%s>' % (removepage,formname)
@@ -270,6 +280,8 @@ def ShowGlobal(user,cslist="faxdone",newpage="",dldpage="",removepage="",formnam
         print '   <td>&nbsp;%s</td>' % cs_helpers.getOption(control,"GLOBAL","subject","")
     print "</table>"
     print '<input type="hidden" name="qtype" value="%s">' % cslist
-    print "<p><a href='' onClick='document.forms[\"%s\"].cjobid.checked = true; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = true; } return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
+    print "<a href='' onClick='document.forms[\"%s\"].cjobid.checked = true; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = true; } return false'>%s</a>" % (formname,formname,formname,webmin.text['list_all'])
     print "&nbsp;&nbsp;<a href='' onClick='document.forms[\"%s\"].cjobid.checked = !document.forms[\"%s\"].cjobid.checked; for(i=0; i<document.forms[\"%s\"].cjobid.length; i++) { document.forms[\"%s\"].cjobid[i].checked = !document.forms[\"%s\"].cjobid[i].checked; } return false'>%s</a>"  % (formname,formname,formname,formname,formname,webmin.text['list_invert'])
-    print '<br><input type=submit name=delete value="%s"></p></form>' % webmin.text['delete']
+    print '<br><br><input type=submit name=delete value="%s"></form>' % webmin.text['delete']
+
+    print '<!-- END=============== Show a global list =================== -->'

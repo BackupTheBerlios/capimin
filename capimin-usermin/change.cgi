@@ -13,10 +13,47 @@ sys.path.append("..")
 sys.stderr = sys.stdout # Send errors to browser
 import webmin
 import capifaxwm
-import cs_helpers,os, re, cgi, time, fcntl
+import cs_helpers,cgi, time, fcntl
 
 capifaxwm.SwitchAndLoadConifg()
 
+
+
+
+    
+def FormTimeToCSTime(formtime):
+    """Convert time provided (e.g.) by a form to the CapiSuite format
+        formtime sample "2005-1-29 2:21"
+        return value is genderated by time.asctime(..) sample: "Sat Jan 29 02:21:00 2005"
+            which is used by capisuite in the jobfiles
+    """
+    try:
+        timestruct = time.strptime(formtime,"%Y-%m-%d %H:%M")
+        cstime = time.asctime(timestruct)
+    except:
+        raise capifaxwm.CSUserInputError("Invalid time and/or date from Formdata")
+    return cstime
+    
+def form_removejob(user,formdata):
+    if (not form) or (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0):
+        raise capifaxwm.CSConfigError
+    formTime = formdata.getfirst("year","")+"-"+formdata.getfirst("month","")+"-"+formdata.getfirst("day","")+" "+\
+                formdata.getfirst("hour","")+":"+formdata.getfirst("min","")
+    jtime=FormTimeToCSTime(formTime)       
+    if (not formdata.has_key("jobid")) or (not formdata.has_key("formDialString")) or (not formdata.has_key("formOrgDate")) or (not formdata.has_key("formTries")) or (not form.has_key("filetype")):
+        raise capifaxwm.CSConfigError
+    subject = form.getfirst("formSubject","")
+    addressee = form.getfirst("formDialAddressee","")
+    dialstring = form.getfirst("formDialString")
+    jtries = form.getfirst("formTries")
+    jobid = form.getfirst("jobid")
+    filetype = form.getfirst("filetype")
+    cslist = form.getfirst("cslist")
+
+    capifaxwm.change_job(user,jobid,cslist,dialstring,filetype,jtime,addressee,subject,jtries)
+
+
+    
 webmin.header("Capisuitefax - change fax",  config=None, nomodule=1)
 print "<hr>"
 
@@ -25,63 +62,19 @@ try:
     # get the "POST" vars
     form = cgi.FieldStorage()
     user = webmin.remote_user
-    if (not form) or (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0):
-        raise capifaxwm.CSConfigError
-    formTime = form.getfirst("year","")+"-"+form.getfirst("month","")+"-"+form.getfirst("day","")+" "+\
-                form.getfirst("hour","")+":"+form.getfirst("min","")
 
-    try:
-        timestruct = time.strptime(formTime,"%Y-%m-%d %H:%M")
-        timec = time.asctime(timestruct)
-    except:
-        print "<p> Invalid time and/or date </p>"
-        raise capifaxwm.CSConfigError
-#    print "<p> ASCTime: "+timec+"</p>"
-#    print "<p> %s %s %s %s <br> " % (form.getfirst("jobid"),form.getfirst("formDialString"),form.getfirst("formDialAddressee"),form.getfirst("formTries"))
-#    print " %s %s </p>" % (form.getfirst("formOrgDate"),form.getfirst("formSubject"))
-    
-    # check post values
-    
-    if (not form.has_key("jobid")) or (not form.has_key("formDialString")) or (not form.has_key("formOrgDate")) or (not form.has_key("formTries")) or (not form.has_key("filetype")):
-        raise capifaxwm.CSConfigError
-    
-    subject = form.getfirst("formSubject","")
-    addressee = form.getfirst("formDialAddressee","")
-    dialstring = form.getfirst("formDialString")
-    tries = form.getfirst("formTries")
-    jobid = form.getfirst("jobid")
-    filetype = form.getfirst("filetype")
-    if capifaxwm.CheckJobID(jobid)==-1:
-        # this should never happen...
-        print "<p><b> CRITICAL %s: False data in fax ID - check the module/source code! </b></p>" % webmin.text.get('error','').upper()
-        raise capifaxwm.CSConfigError
-    if not filetype or filetype!="sff" or not filetype!="cff":
-        # this should never happen...
-        print "<p><b> %s: False/unsupported filetype for jobdata file</b></p>" % webmin.text.get('error','').upper()
-        raise capifaxwm.CSConfigError
-    
-    sendq=os.path.join(capifaxwm.UsersFax_Path,user,"sendq")+os.sep
-    if (not os.access(sendq,os.W_OK)):
-            print "<p>can't write to queue dir</p>"
-            raise capifaxwm.CSConfigError # might be better to use s.th. else ...
-    
-    jobfile = sendq+"fax-"+jobid+".txt"
-    try:
-        lockfile=open(jobfile[:-3]+"lock","w")
-        # lock so that it isn't deleted while sending
-        fcntl.lockf(lockfile,fcntl.LOCK_EX | fcntl.LOCK_NB)
-        cs_helpers.writeDescription(jobfile[:-3]+filetype,"dialstring=\""+dialstring+"\"\n"
-            +"starttime=\""+timec+"\"\ntries=\""+tries+"\"\n"
-            +"user=\""+user+"\"\naddressee=\""+addressee+"\"\nsubject=\""
-            +subject+"\"\n")
-        fcntl.lockf(lockfile,fcntl.LOCK_UN)
-        os.unlink(jobfile[:-3]+"lock")
-    except IOError,err:
-        if (err.errno in (errno.EACCES,errno.EAGAIN)):
-            print "<p><b>Job is currently in transmission. Can't abort.</b></p>"
-    print '<p><b> Fax to %s %s (with ID %s) changed</b></p>' % (addressee,dialstring,jobid)
+    form_removejob(user,form)
+
+     
+ 
 
 except capifaxwm.CSConfigError:
     print "<p><b>%s: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
+except capifaxwm.CSInternalError,err:
+    print "<p><b>%s: Inernal error (e.g. function called with wrong params): %s</b></p>" % (webmin.text.get('error','').upper(),err)
+except capifaxwm.CSUserInputError,err:
+    print "<p><b>%s: Invalid Formvalue(s): %s</b></p>" % (webmin.text.get('error','').upper(),err)
+except capifaxwm.CSJobChangeError,err:
+    print "<p><b>%s: Failed to change the job: %s</b></p>" % (webmin.text.get('error','').upper(),err)
 print "<hr>"
 webmin.footer([("", "module index")])

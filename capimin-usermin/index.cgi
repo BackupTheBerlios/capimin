@@ -46,7 +46,7 @@ else:
         if l==0:
             print "<p><b> Send Queue</b></p>"
             capimin_lists.ShowSend(webmin.remote_user)
-            print "<p><b> New Send Queue - does currently nothing </b></p>"
+            print "<p><b> New Send Queue - DOES currently NOTHING </b></p>"
             capimin_lists.ShowSend2(webmin.remote_user)
         elif l==1:
             print "<p><b> Received List: Fax</b></p>"

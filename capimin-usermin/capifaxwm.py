@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.20 $
+#    version              : $Revision: 1.21 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -222,22 +222,36 @@ def checkconfig(checkvoice=0):
         # handle every exception as an error in the configuration
         return -1   
     
-# check if the user is a valid capisuitefax user
-# set verbose=1 if you want a (html formated) error messages to be printed out
-# return value: 0 = false , 1 = true 
 def checkfaxuser(user,verbose=0):
+    """check if the user is a valid capisuitefax user
+        set verbose=1 if you want a (html formated) error messages to be printed out
+        return value: 0 = false , 1 = true 
+    """
     if (not CAPI_config.has_section(user)):
         if verbose==1:
             print "<p><b> ERROR: user \""+user+"\" is not a valid capifaxuser</b></p>"
         return 0
     else:
         return 1
+def BuildJobFile(user,jobid,cslist,jobfileext="txt"):
+    """Build a jobfile name
+        Warning, this function doesn't check the params, this must be done by the
+        parent function
+    """
+    jobfile =""
+    if listtypes[cslist][1]==1:
+        jobfile=user+"-"
+    jobfile=jobfile+listtypes[cslist][0]+"-"+jobid
+    if jobfileext:
+        jobfile=jobfile+os.extsep+jobfileext
+    return jobfile
 
 def removejob(user,jobid,cslist):
+    """removes (delete) a job from queue dir"""
     if (checkconfig() == -1) or (checkfaxuser(user,1) == 0):
         raise CSConfigError
     if not listtypes.has_key(cslist) or CheckJobID(jobid)==-1:
-        raise CSConfigError
+        raise CSInternalError("Invalid list/queue type oder jobid provided")
     
     qpath=BuildListPath(cslist,user)
     
@@ -276,16 +290,66 @@ def removejob(user,jobid,cslist):
         if (err.errno in (errno.EACCES,errno.EAGAIN)):
             raise CSRemoveError("Job is currently in transmission or in similar use. Can't remove.")
 
+def change_job(user,jobid,cslist,dialstring,filetype,jtime,addressee="",subject="",jtries="0"):
+    """Change a job settings (only used for send queue)
+        all params have to be comaptible to the CapiSuite job file format
+    """
+    
+    if (checkconfig() == -1) or (checkfaxuser(user,1) == 0):
+        raise CSConfigError
+    if not listtypes.has_key(cslist) or CheckJobID(jobid)==-1:
+        raise CSInternalError("Invalid list/queue type oder jobid provided")
+    dialstring = ConvertDialString(dialstring)
+    if not dialstring:
+        raise CSUserInputError("Invalid dailstring")
+    # the next two line if statements, limit this funtion to only
+    # modify the fax send queue
+    if not filetype or filetype!="sff" or not filetype!="cff":
+        raise CSInternalError("Invalid job filetype (sff/cff)")
+    if cslist!="faxsend":
+        raise CSInternalError("Cannot modify any queue than fax send")
+    
+    if not addressee:
+        addressee=""
+    if not subject:
+        subject=""
+    # CheckJobID works here also 
+    if CheckJobID(jtries)==-1:
+        jtries="0"
 
-# check a dialstring, allows typical "help chars"/separators
+    qpath=BuildListPath(cslist,user)
+    if (not os.access(qpath,os.W_OK)):
+        raise CSInternalError("Can't write to queue dir: "+cslist)
+    job = BuildJobFile(user,jobid,cslist)
+    
+
+    try:
+        lockfile=open(qpath+job[:-3]+"lock","w")
+        # lock so that it isn't deleted while sending
+        fcntl.lockf(lockfile,fcntl.LOCK_EX | fcntl.LOCK_NB)
+        cs_helpers.writeDescription(qpath+job[:-3]+filetype,"dialstring=\""+dialstring+"\"\n"
+            +"starttime=\""+jtime+"\"\ntries=\""+jtries+"\"\n"
+            +"user=\""+user+"\"\naddressee=\""+addressee+"\"\nsubject=\""
+            +subject+"\"\n")
+        fcntl.lockf(lockfile,fcntl.LOCK_UN)
+        os.unlink(qpath+job[:-3]+"lock")
+    except IOError,err:
+        if (err.errno in (errno.EACCES,errno.EAGAIN)):
+            raise CSJobChangeError("Job is currently in transmission or in similar use. Can't change it.")
+        else:
+            raise CSJobChangeError("Unkown access error while changing a job:"+err)
+   
 def CheckDialString(dialstring):
-    if not dialstring:  return -1
+    """check a dialstring, allows typical "help chars"/separators"""    
+    if not dialstring:
+        return -1
     if re.compile("[^0-9+()/\- ]+").search(dialstring):
         return -1
 
-# Converts a dialstring, only allows numbers and "+"
-# It performs first a check with "CheckDialString(dialstring)"
 def ConvertDialString(dialstring):
+    """Converts a dialstring, only allows numbers and "+"
+        It performs first a check with "CheckDialString(dialstring)"
+    """
     if CheckDialString(dialstring)==-1:
         return None
     
@@ -295,6 +359,9 @@ def ConvertDialString(dialstring):
     return dialstring
 
 def CheckJobID(jobid):
+    """Checks if the job id is valid for CapiSuite
+        returns -1 in case the job id is invalid
+    """
     if not jobid:
         return -1
     if re.compile("[^0-9]").search(jobid):
@@ -522,14 +589,38 @@ class CSConvError(Exception):
     def __str__(self):
         return repr(self.message)
 
-# used for internal errors (e.g. if a function is called with the false values)
+
 class CSInternalError(Exception):
+    """used for internal errors (e.g. if a function is called with the false values)"""
     def __init__(self, message):
         self.message = message
     def __str__(self):
         return repr(self.message)
 
+class CSUserInputError(Exception):
+    """Data provided by the user is invalid
+        a more general replacement for the FormInputError exception
+    """
+    def __init__(self, message):
+        self.message = message
+    def __str__(self):
+        return repr(self.message)
+
+
+
 class CSRemoveError(Exception):
+    """ errortype:: to define the type of the error:
+            0=default/undefined,1=false job,2=access error,3=job in use
+    """
+    def __init__(self, message,errortype=0):
+        self.message = message
+        self.errortype = errortype
+    def __str__(self):
+        return repr(self.message)
+    def ErrorType():
+        return self.errortype
+
+class CSJobChangeError(Exception):
     """ errortype:: to define the type of the error:
             0=default/undefined,1=false job,2=access error,3=job in use
     """
