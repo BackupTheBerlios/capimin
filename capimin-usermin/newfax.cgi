@@ -127,6 +127,7 @@ def shownewform(fjobid="",fqtype=""):
 	print '        <option value="%s"%s>%s</option>' % (i,selected,webmin.text["smonth_"+str(i)])
     
     print '        </select>-<input name="day" size="2" maxlength="2" value="%s">' % curtime[2]
+    print capifaxwm.date_chooser_button("day","month","year")
     print '        &nbsp;<b>%s</b>&nbsp;<input name="hour" size="2" maxlength="2" value="%s">:<input name="min" size="2" maxlength="2" value="%02d"></td></tr>' % (webmin.text['newfax_sendtime'],curtime[3],curtime[4])
     print '    <tr><td><b>Destination</b> (dialstring)</td><td><input type="text" name="dialstring" size=20 value="%s"></td></tr>' % cgi.escape(dialstring,1)
     print '    <tr><td><b>Addresse</b></td><td><input type=text name="addressee" size=20 value="%s"></td></tr>' % cgi.escape(addressee,1)

@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.17 $
+#    version              : $Revision: 1.18 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ try:
     import HTMLgen
 except:
     if webmin.tconfig.has_key('functions'):
-	webmin.tconfig['functions'] = "-"
+        webmin.tconfig['functions'] = "-"
 
 # -----------------
 # needed, because the current webmin.py does not contain create_user_config_dirs and userconfig
@@ -122,6 +122,15 @@ def load_user_config():
 	if not _skip_user_config_file:
 	    webmin.read_file_cached(webmin.user_module_config_directory+os.sep+'config',webmin.userconfig)
 
+# will be replaced with the same function in the webmin module
+def date_chooser_button(dayfield, monthfield, yearfield, formno=0):
+    if not dayfield or not monthfield or not yearfield:
+        return ""
+    return '<input type=button onClick=\'window.dfield = document.forms[%s].%s; window.mfield = document.forms[%s].%s; \
+window.yfield = document.forms[%s].%s; \
+window.open("%s/date_chooser.cgi?day="+escape(dfield.value)+"&month="+escape(mfield.selectedIndex)+"&year="+yfield.value, \
+"chooser", "toolbar=no,menubar=no,scrollbars=yes,width=250,height=225")\' value="...">\n' % \
+        (formno,dayfield,formno,monthfield,formno,yearfield,webmin.gconfig.get('webprefix',''))
 
 
 
