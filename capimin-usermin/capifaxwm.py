@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.16 $
+#    version              : $Revision: 1.17 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -446,13 +446,28 @@ def ConvertCFF2PDF(cfffile,destfile,desttype="pdf"):
     return remtempfailed
     
 
-def ConvertPDF2PS(pdffile,psfile):
-    if not pdffile or not psfile:
+#def ConvertPDF2PS(pdffile,psfile):
+#    if not pdffile or not psfile:
+#	raise CSConvError("False parameter (no in and/or outputfile)")
+#    
+#    ret=os.spawnlp(os.P_WAIT,"pdf2ps","pdf2ps",pdffile,psfile)
+#    if (ret or not os.access(psfile,os.F_OK)):
+#	raise CSConvError("Can't convert pdf to ps. pdf2ps not installed?")
+
+def ConvertPDF2SFF(pdffile,sfffile):
+    if not pdffile or not sfffile:
 	raise CSConvError("False parameter (no in and/or outputfile)")
     
-    ret=os.spawnlp(os.P_WAIT,"pdf2ps","pdf2ps",pdffile,psfile)
-    if (ret or not os.access(psfile,os.F_OK)):
-	raise CSConvError("Can't convert pdf to ps. pdf2ps not installed?")
+    pdffilename = os.path.basename(pdffile)
+    if not pdffilename:
+	raise CSConvError("False parameter (no in and/or outputfile)")
+    if pdffile.startswith("@") or pdffilename.startswith("@"):
+	raise CSConvError('Illegal char found in pdf filename/path for use with "gs"')
+    gscmd = "gs -dNOPAUSE -dQUIET -dBATCH -sDEVICE=cfax -sOutputFile="+cs_helpers.escape(sfffile)+" "+cs_helpers.escape(pdffile)
+    (ret,out) = commands.getstatusoutput(gscmd)
+    
+    if (ret or not os.access(sfffile,os.R_OK)):
+	raise CSConvError("Failed converting pdf->sff. PDF-file damaged/false format or gs not installed?")
 
 def ConvertPS2SFF(psfile,sfffile):
     if not psfile or not sfffile:
@@ -462,13 +477,15 @@ def ConvertPS2SFF(psfile,sfffile):
     if not psfilename:
 	raise CSConvError("False parameter (no in and/or outputfile)")
     if psfile.startswith("@") or psfilename.startswith("@"):
-	raise CSConvError('Illegal char found in ps file for use with "gs"')
+	raise CSConvError('Illegal char found in ps filename/path for use with "gs"')
     #ret = os.spawnlp(os.P_WAIT,"gs","gs","-dNOPAUSE","-dQUIET","-dBATCH","-sDEVICE=cfax","-sOutputFile="+cs_helpers.escape(sfffile),cs_helpers.escape(psfile))
     gscmd = "gs -dNOPAUSE -dQUIET -dBATCH -sDEVICE=cfax -sOutputFile="+cs_helpers.escape(sfffile)+" "+cs_helpers.escape(psfile)
     (ret,out) = commands.getstatusoutput(gscmd)
     
     if (ret or not os.access(sfffile,os.R_OK)):
-	raise CSConvError("Failed  converting ps->sff. PS-file damaged/false format or gs not installed?")
+	raise CSConvError("Failed converting ps->sff. PS-file damaged/false format or gs not installed?")
+
+
     
 
 

@@ -108,11 +108,16 @@ def shownewform(fjobid="",fqtype=""):
 	title="New"
 
     
-    
+    #if formActionType.startswith("forward"):
+#	print "<p> The received fax document may includes information from where and when you reiceived it.<br>"
+#	print "Download and edit the fax if you don't want to send this information with the new fax</p>"
     print '<table border="1">' 
     print ' <tr bgcolor=#%s><th>%s</th></tr>  ' % (webmin.tb,title)
     print ' <tr bgcolor=#%s><td><form METHOD="POST" ACTION="newfax.cgi" %s>' % (webmin.cb,enctype)
     print '   <table>'
+    if formActionType.startswith("forward"):
+	print '    <tr><td colspan="2"><i>The received fax document may includes information from where and when you received it<br>'
+	print '            Download and edit the fax if you don\'t want to send this information with the new fax</i><br>&nbsp;</td></tr>'
     print '    <tr><td><b>%s</b></td><td>' % webmin.text['newfax_senddate']
     print '        <input name="year" type="text" size="4" maxlength="4" value="%s">-<select name="month">' % curtime[0]
     for i in range(1,13):
@@ -206,6 +211,10 @@ try:
 	    if not tmpjobfile or not newpath or not upfile.file :
 		print "<p>%s%s - %s</p>" % (newpath,tmpjobfile,cgi.escape(upfile,1))
 		raise capifaxwm.CSConfigError
+	    
+	    if not upfile.filename:		
+		print "<p><b> No file uploaded </b></p>"
+	        raise capifaxwm.FormInputError
 	    # avoid an "@" as filenamestart, which causes trouble in gs
 	    tmpjobfile = "ul_"+tmpjobfile #[1:]
 	    outFile = open(newpath+tmpjobfile,"wb")
@@ -222,16 +231,20 @@ try:
 		elif (re.search("application/pdf",filetype)):
 		    fileext="pdf"
 		else:
-		    print "<p><b> False File format - currently only sff/ps/pdf files are supported </b></p>"	    
+		    print "<p><b> False File format - currently only sff/ps/pdf files are supported </b></p>"
+		    rmfile(newpath+tmpjobfile)
         	    raise capifaxwm.FormInputError
 		if fileext=="pdf":
-		    capifaxwm.ConvertPDF2PS(newpath+tmpjobfile,newpath+"ps_"+tmpjobfile)
+		    #capifaxwm.ConvertPDF2PS(newpath+tmpjobfile,newpath+"ps_"+tmpjobfile)
+		    #rmfile(newpath+tmpjobfile)
+		    #tmpjobfile="ps_"+tmpjobfile
+		    capifaxwm.ConvertPDF2SFF(newpath+tmpjobfile,newpath+"out_"+tmpjobfile)
 		    rmfile(newpath+tmpjobfile)
-		    tmpjobfile="ps_"+tmpjobfile
-		
-		capifaxwm.ConvertPS2SFF(newpath+tmpjobfile,newpath+"out_"+tmpjobfile)
-		rmfile(newpath+tmpjobfile)
-		tmpjobfile ="out_"+tmpjobfile 		
+		    tmpjobfile ="out_"+tmpjobfile 		
+		else:
+		    capifaxwm.ConvertPS2SFF(newpath+tmpjobfile,newpath+"out_"+tmpjobfile)
+		    rmfile(newpath+tmpjobfile)
+		    tmpjobfile ="out_"+tmpjobfile 		
 
 	    capifaxwm.sendfax(webmin.remote_user,dialstring,newpath+tmpjobfile,timec,addressee,subject)
 	    if rmfile(newpath+tmpjobfile)==-1:
