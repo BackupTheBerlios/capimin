@@ -17,7 +17,6 @@
 # Uses functions from CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.25 $
 # http://www.capisuite.de
 
 # Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
@@ -38,7 +37,7 @@ import pwd
 
 webmin.init_config()
 # check if python modul HTMLGen is installed, and if not
-# disable the theme use by Web/Usermin. This is done by an
+# disable the theme use by Web/Usermin. This is done the
 # "unoffical" way: the path to the theme file is deleted from
 # the webmin.tconfig dictionary
 try:
@@ -48,18 +47,26 @@ except:
         webmin.tconfig['functions'] = "-"
 
 # -----------------
-# needed, because the current webmin.py does not contain create_user_config_dirs and userconfig
+# Switches to usermin user and loads(or creates) the user config files
+#
+# created in case the python-webmin lib doesn't contain all required functions
+# ==> the a workaround method can be used (if exists).
+# the current release doesn't support old python-webmin library versions
+# so this function throws NotImplementedError
 _OldWebminpy=None
-_showconfig=1
 
 def SwitchAndLoadConifg():
-    try:    
-        webmin.switch_to_remote_user()
-        webmin.create_user_config_dirs()
-        _showconfig=1
-    except NotImplementedError:
-        _OldWebminpy=1
-        _showconfig=None
+    """Switches to usermin user and loads(or creates) the user config files"""
+    webmin.switch_to_remote_user()
+    webmin.create_user_config_dirs()      
+
+##    try:    
+##        webmin.switch_to_remote_user()
+##        webmin.create_user_config_dirs()      
+##    except NotImplementedError:
+##        _OldWebminpy=1
+##        raise NotImplementedError
+
 # -----------------
 
 
@@ -105,7 +112,7 @@ listtypes = {'faxsend':('fax', 0,'fax_user_dir','sendq'),
 
 
 def load_user_config():
-    """ This function is simialar as webmin's api create_user_config_dirs() function,
+    """ This function is similar as webmin's api create_user_config_dirs() function,
     but it only reads the config and doesn't create any directories.
     One reason for this, because without a call to switch_user, the webmin api
     function would create the dir as root, which would then be not writeable by
@@ -282,7 +289,8 @@ def removejob(user,jobid,cslist):
             fileext="cff"
         datafile=qpath+job[:-3]+fileext
     if not datafile:
-        raise CSRemoveError('Job file "%s" (ID:%s List:%s) does not contain a link to a datafile (e.g. sff faxfile) => Invalid job file' % (job,jobid,cslist))
+        raise CSRemoveError('Job file "%s" (ID:%s List:%s) does not contain a link to a datafile (e.g. sff faxfile)'\
+                            ' => Invalid job file' % (job,jobid,cslist))
     try:    
         lockfile=open(qpath+job[:-3]+"lock","w")
         # lock so that it isn't deleted while sending (or else)
@@ -295,9 +303,11 @@ def removejob(user,jobid,cslist):
         if (err.errno in (errno.EACCES,errno.EAGAIN)):
             raise CSRemoveError("Job is currently in transmission or in similar use. Can't remove.")
 
+# older function
 def change_job_advanced(user,jobid,cslist,dialstring,filetype,jtime,addressee="",subject="",jtries="0"):
     """Change a job settings (only used for send queue)
         all params have to be comaptible to the CapiSuite job file format
+        currently not used (replaced by ChangeJob() )
     """
     
     if (checkconfig() == -1) or (checkfaxuser(user,1) == 0):
@@ -349,7 +359,7 @@ def change_job_advanced(user,jobid,cslist,dialstring,filetype,jtime,addressee=""
 
 def ChangeJob(user,jobid,cslist,dialstring=None,starttime=None,addressee=None,subject=None):
     """changes a job, imports missing values from the job file
-    a replacement for change_job_advanced completly (not dual error checks, etc)
+    a replacement for change_job_advanced (not dual error checks, etc)
     """
     if (checkconfig() == -1) or (checkfaxuser(user,1) == 0):
         raise CSConfigError
@@ -372,18 +382,15 @@ def ChangeJob(user,jobid,cslist,dialstring=None,starttime=None,addressee=None,su
     except:
         raise CSJobChangeError("Failed to read the jobfile")
 
-    print "step2"
+
     if dialstring==None:
         dialstring=control.get("GLOBAL","dialstring")
     else:
-        dialstring=ConvertDialString(dialstring)
-       
+        dialstring=ConvertDialString(dialstring)       
     if starttime==None:
         starttime=control.get("GLOBAL","starttime")
-    print "step4"
     if addressee==None:
         addressee=cs_helpers.getOption(control,"GLOBAL","addressee","")
-    print "step6"
     if subject==None:
         subject=cs_helpers.getOption(control,"GLOBAL","subject","")
 
@@ -427,7 +434,8 @@ def ConvertDialString(dialstring):
     
     # delete common dial separators 
     dialstring=dialstring.translate(string.maketrans("",""),"-/ ()")
-    if not dialstring: return None # this should never happen... (done in CheckDialString)
+    if not dialstring:
+        return None # this should never happen... (done in CheckDialString)
     return dialstring
 
 def CheckJobID(jobid):
@@ -445,10 +453,11 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
     if not dialstring:
         raise CSUserInputError("empty dialstring")
     
-    if ((cs_helpers.getOption(CAPI_config,user,"outgoing_MSN","")=="") and (CAPI_config.get(user,"fax_numbers","")=="")):
+    if ((cs_helpers.getOption(CAPI_config,user,"outgoing_MSN","")=="") and \
+        (CAPI_config.get(user,"fax_numbers","")=="")):
         raise CSGeneralError("Sorry, your are not allowed to send a fax")
     
-    filetype = os.path.splitext(sourcefile)[1].lower()[1:] # splittext always returns a list of 2, so no "None" check needed
+    filetype = os.path.splitext(sourcefile)[1].lower()[1:] # splittext returns a list of 2, so no "None" check needed
     if not filetype:
         raise CSUserInputError("nvalid input (fax) file")
     
@@ -623,7 +632,8 @@ def ConvertPS2SFF(psfile,sfffile):
         raise CSConvError("False parameter (no in and/or outputfile)")
     if psfile.startswith("@") or psfilename.startswith("@"):
         raise CSConvError('Illegal char found in ps filename/path for use with "gs"')
-    #ret = os.spawnlp(os.P_WAIT,"gs","gs","-dNOPAUSE","-dQUIET","-dBATCH","-sDEVICE=cfax","-sOutputFile="+cs_helpers.escape(sfffile),cs_helpers.escape(psfile))
+    #ret = os.spawnlp(os.P_WAIT,"gs","gs","-dNOPAUSE","-dQUIET","-dBATCH","-sDEVICE=cfax","-sOutputFile="\
+    #       +cs_helpers.escape(sfffile),cs_helpers.escape(psfile))
     gscmd = "gs -dNOPAUSE -dQUIET -dBATCH -sDEVICE=cfax -sOutputFile="+cs_helpers.escape(sfffile)+" "+cs_helpers.escape(psfile)
     (ret,out) = commands.getstatusoutput(gscmd)
     
@@ -650,8 +660,8 @@ class CSConfigError(Exception):
 class FormInputError(Exception):
     pass
 
-# Exceptions added because Python (2.2.1) or at least my code, doesn't catch the string exception type ("conv-error","messgae")
-# when the exception is handled in another module
+# Exceptions added because Python (2.2.1) or at least my code, doesn't catch the string exception
+# type ("conv-error","messgae") when the exception is handled in another module
 class CSConvError(Exception):
     def __init__(self, message):
         self.message = message

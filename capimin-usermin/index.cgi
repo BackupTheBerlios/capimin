@@ -18,7 +18,7 @@
 # Uses functions from CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.23 $
+#    version              : $Revision: 1.24 $
 # http://www.capisuite.de
 
 # Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
@@ -52,7 +52,7 @@ elif (capifaxwm.checkfaxuser(webmin.remote_user)==0):
           ' fax user (= *nix user) </b></p>' % (webmin.text.get('error','').upper(),webmin.remote_user)
 else:
     print '<form action="newfax.cgi" method="POST"><input type="hidden" name="faxcreate" value="new"><input'\
-          ' type=SUBMIT value="Newfax"></form>'
+          ' type=SUBMIT value="%s"></form>' % webmin.text['index_newfax']
     print '\n<hr>\n'
 
     remove_gdirs = wm_pytools.ExtractIntConfig(webmin.config.get('remove_gdirs'),0,0,1)
@@ -62,7 +62,7 @@ else:
     for ls in show_lists:
         l=int(ls)
         if l==0:
-            print "<p><b> Send Queue VIII</b></p>"
+            print "<p><b> Send Queue V III</b></p>"
             capimin_lists.ShowSend3(webmin.remote_user)
         elif l==1:
             print "<p><b> Received List: Fax</b></p>"

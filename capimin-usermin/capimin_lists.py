@@ -200,9 +200,12 @@ def ShowSend3(user,changepage="change.cgi",formname=""):
           " { document.forms[\"%s\"].cindex[i].checked = !document.forms[\"%s\"].cindex[i].checked; }"\
           " return false'>%s</a>"  % (formname,formname,formname,formname,formname,webmin.text['list_invert'])
     # submit buttons
-    print '<br><br><input type=submit name="change" value="%s">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'\
-          '<input type=submit name="onehlater" value="1h later">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'\
-          '<input type=submit name="delete" value="%s"></form>' % (webmin.text['index_change'],webmin.text['delete'])
+    print '<br><br>'
+    print '<input type=submit name="change" value="%s">&nbsp;<input type=submit name="changsend" value="%s">&nbsp;'\
+          '<input type=submit name="onehlater" value="%s">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'\
+          '<input type=submit name="delete" value="%s"></form>' % \
+          (webmin.text['index_change'],webmin.text['index_chnagesend'],webmin.text['index_1hlater'],
+           webmin.text['delete'])
     
     print '<!-- END================ Show New Send queue V III=================== -->'
 

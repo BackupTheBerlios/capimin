@@ -46,14 +46,18 @@ try:
     if form.has_key("cslist"):
         cslist=form.getfirst("cslist")
 
-    if form.has_key("change") or form.has_key("schange") or form.has_key("onehlater"):
-        LocalHeader()
+    if form.has_key("change") or form.has_key("schange") or form.has_key("onehlater") \
+    or form.has_key("changsend"):
         if not form.has_key("cindex"):
             raise "NoneSelected"
         timechange=None
+        sendnow=None
         if form.has_key("onehlater"):
-            timechange=3600
-        FormChangeJob(user,form,timechange)
+            timechange=3600 # in seconds
+        elif form.has_key("changsend"):
+            sendnow=1
+                          
+        FormChangeJob(user,form,timechange,sendnow)
         if not IsHeaderShown():
             webmin.redirect()
     elif form.has_key("delete"):

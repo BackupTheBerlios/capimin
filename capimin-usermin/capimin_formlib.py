@@ -67,12 +67,14 @@ def FormTime2CSTime(formtime, timediff=None):
     return cstime
 
 # internal function
-def __form_change_singlejob(user,formdata,timediff=None):
+def __form_change_singlejob(user,formdata,timediff=None,sendnow=None):
     
- 
-    formTime = formdata.getfirst("year_0","")+"-"+formdata.getfirst("month_0","")+"-"+formdata.getfirst("day_0","")+" "+\
-                formdata.getfirst("hour_0","")+":"+formdata.getfirst("min_0","")
-    jtime=FormTime2CSTime(formTime,timediff)       
+    if not sendnow:
+        formTime = formdata.getfirst("year_0","")+"-"+formdata.getfirst("month_0","")+"-"+formdata.getfirst("day_0","")+" "+\
+                    formdata.getfirst("hour_0","")+":"+formdata.getfirst("min_0","")
+        jtime=FormTime2CSTime(formTime,timediff)
+    else:
+        jtime=time.asctime()
     subject = formdata.getfirst("formSubject_0","")
     addressee = formdata.getfirst("formDialAddressee_0","")
     cjobid = formdata.getfirst("cjobid")
@@ -81,7 +83,7 @@ def __form_change_singlejob(user,formdata,timediff=None):
     capifaxwm.ChangeJob(user,cjobid,cslist,None,jtime,addressee,subject)
 
 
-def FormChangeJob(user,formdata,timediff=None):
+def FormChangeJob(user,formdata,timediff=None,sendnow=None):
     if (not formdata) or (capifaxwm.checkconfig() == -1) or (capifaxwm.checkfaxuser(user,1) == 0):
         raise capifaxwm.CSConfigError
     if (not formdata.has_key("cindex")) or (not formdata.has_key("cjobid")) or \
@@ -89,7 +91,7 @@ def FormChangeJob(user,formdata,timediff=None):
         raise capifaxwm.CSInternalError("FormChangeJob() - Invalid Formdata")
       
     if not isinstance(formdata.getvalue("cjobid"),list):
-        __form_change_singlejob(user,formdata,timediff)
+        __form_change_singlejob(user,formdata,timediff,sendnow)
         return
     
     #TODO check listtypes
@@ -98,12 +100,7 @@ def FormChangeJob(user,formdata,timediff=None):
         
     formjoblist = formdata.getvalue("cindex")
     if not isinstance(formjoblist, list):
-        print "<p> cindex is not </p>"
         formjoblist = [formjoblist] # ;)
-    if not isinstance(formdata.getvalue("formTries"), list):  
-        print "<p> formTries is not </p>"
-    else:
-        print "<p> formTries is </p>"
     cjobid=None
     for job in formjoblist:
         try:
@@ -111,27 +108,36 @@ def FormChangeJob(user,formdata,timediff=None):
             if cindex==None or cindex>=alllen or cindex<0:
                 raise capifaxwm.CSInternalError("FormChangeJob() - Invalid Formdata - out of range")
             cjobid = formdata["cjobid"][cindex].value           
-            
-            year=""
-            if formdata.has_key("year_"+str(cindex)):
-                year = formdata["year_"+str(cindex)].value
-            month=""
-            if formdata.has_key("month_"+str(cindex)):
-                month = formdata["month_"+str(cindex)].value
-            day=""
-            if formdata.has_key("day_"+str(cindex)):
-                day = formdata["day_"+str(cindex)].value
-            hour="00"
-            if formdata.has_key("hour_"+str(cindex)):
-                hour = formdata["hour_"+str(cindex)].value            
-            minute="00"
-            if formdata.has_key("min_"+str(cindex)):
-                minute = formdata["min_"+str(cindex)].value
-            formTime = "%s-%s-%s %s:%s" % (year,month,day,hour,minute)
-            #formTime = formdata["year"][cindex].value+"-"+formdata["month"][cindex].value+"-"+\
-            #           formdata["day"][cindex].value+" "+formdata["hour"][cindex].value+":"+\
-            #           formdata["min"][cindex].value
-            jtime=FormTime2CSTime(formTime,timediff)           
+
+            if not sendnow:
+                year=""
+                if formdata.has_key("year_"+str(cindex)):
+                    year = formdata["year_"+str(cindex)].value
+                if not year:
+                    raise capifaxwm.CSUserInputError("Year missing")
+                month=""
+                if formdata.has_key("month_"+str(cindex)):
+                    month = formdata["month_"+str(cindex)].value
+                if not month:
+                    raise capifaxwm.CSUserInputError("Month missing")
+                day=""
+                if formdata.has_key("day_"+str(cindex)):
+                    day = formdata["day_"+str(cindex)].value
+                if not day:
+                    raise capifaxwm.CSUserInputError("Day missing")
+                hour="00"
+                if formdata.has_key("hour_"+str(cindex)):
+                    hour = formdata["hour_"+str(cindex)].value            
+                minute="00"
+                if formdata.has_key("min_"+str(cindex)):
+                    minute = formdata["min_"+str(cindex)].value
+                formTime = "%s-%s-%s %s:%s" % (year,month,day,hour,minute)
+                #formTime = formdata["year"][cindex].value+"-"+formdata["month"][cindex].value+"-"+\
+                #           formdata["day"][cindex].value+" "+formdata["hour"][cindex].value+":"+\
+                #           formdata["min"][cindex].value
+                jtime=FormTime2CSTime(formTime,timediff)
+            else:
+                jtime=time.asctime()
            
             subject=""
             if formdata.has_key("formSubject_"+str(cindex)):
@@ -140,19 +146,19 @@ def FormChangeJob(user,formdata,timediff=None):
             addressee=""
             if formdata.has_key("formDialAddressee_"+str(cindex)):
                 addressee = formdata["formDialAddressee_"+str(cindex)].value
-    
-            print "<br> Changing Job....<br>"          
+   
             capifaxwm.ChangeJob(user,cjobid,cslist,None,jtime,addressee,subject)
         except capifaxwm.CSInternalError,err:
             LocalHeader()
-            print "<p><b>%s: Internal error (e.g. function called with wrong params): %s</b></p>" %\
-                  (webmin.text.get('error','').upper(),err)            
+            print "<p><b>%s: Internal error (e.g. function called with wrong params): %s - Job ID: %s</b></p>" %\
+                  (webmin.text.get('error','').upper(),err,cjobid)            
         except capifaxwm.CSJobChangeError,err:
             LocalHeader()
-            print "<p><b>%s: %s: %s</b></p>" % (webmin.text.get('error','').upper(),webmin.text.get('change_job_error',''),err)
+            print "<p><b>%s: %s: %s - Job ID: %s</b></p>" % (webmin.text.get('error','').upper(),
+                                                             webmin.text.get('change_job_error',''),err,cjobid)
         except capifaxwm.CSUserInputError, err:
             LocalHeader()
-            print "<p><b>Input-%s: %s: %s</b></p>" % (webmin.text.get('error','').upper(),err)
+            print "<p><b>Input-%s: %s - Job ID: %s</b></p>" % (webmin.text.get('error','').upper(),err,cjobid)
         except:
             LocalHeader()
             print "<br><b>%s (unknown/general):  JobID: %s</b><br>" %(webmin.text.get('error','').upper(),cjobid)
