@@ -28,6 +28,7 @@ fqtype=""
 
 # userswitch can currently not be used here see capisuite bug 50
 # http://www.capisuite.de/capisuite/mantis/view_bug_page.php?f_id=0000050
+# update: added "check and set" for this case, it works now
 capifaxwm.SwitchAndLoadConifg()
 
 capifaxwm.capiconfig_init()
