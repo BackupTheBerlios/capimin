@@ -15,7 +15,7 @@ import webmin
 import capifaxwm
 import cs_helpers,os, re, cgi, time, fcntl
 
-webmin.header("Capisuitefax - change fax",  config=1, nomodule=1)
+webmin.header("Capisuitefax - change fax",  config=None, nomodule=1)
 print "<hr>"
 
 try:

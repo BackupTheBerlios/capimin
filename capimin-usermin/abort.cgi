@@ -17,7 +17,7 @@ import webmin
 import cs_helpers,capifaxwm
 import cgi
 
-webmin.header("Capisuitefax - remove job", config=1, nomodule=1)
+webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
 print "<hr>"
 
 try:

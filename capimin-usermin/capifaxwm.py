@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.10 $
+#    version              : $Revision: 1.11 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,33 @@ import os, sys, re, getopt, commands, fcntl,errno,time,string,shutil,pwd
 import cs_helpers
 
 webmin.init_config()
+# check if python modul HTMLGen is installed, and if not
+# disable the theme use by Web/Usermin. This is done by an
+# "unoffical" way: the path to the theme file is deleted from
+# the webmin.tconfig dictionary
+try:
+    import HTMLgen
+except:
+    if webmin.tconfig.has_key('functions'):
+	webmin.tconfig['functions'] = "-"
+
+# -----------------
+# needed, because the current webmin.py does not contain create_user_config_dirs and userconfig
+_OldWebminpy=None
+_showconfig=1
+
+def SwitchAndLoadConifg():
+    try:	
+        webmin.switch_to_remote_user()
+	webmin.create_user_config_dirs()
+	_showconfig=1
+    except NotImplementedError:
+	_OldWebminpy=1
+        _showconfig=None
+# -----------------
+
+
+
        
 # setup:
 # path to the sox (audio converter) program

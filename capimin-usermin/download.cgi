@@ -12,7 +12,7 @@
 #         -----------------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.8 $
+#    version              : $Revision: 1.9 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -32,16 +32,8 @@ qpath=""
 contenttype="application/octet-stream"
 fileext=""
 
-#webmin.init_config()
-# -----------------
-# needed, because the current webmin.py does not contain create_user_config_dirs and userconfig
-OldWebminpy=None
-try:
-    webmin.switch_to_remote_user()
-    webmin.create_user_config_dirs()
-except NotImplementedError:
-    OldWebminpy=1
-# -----------------
+capifaxwm.SwitchAndLoadConifg()
+
 
 capifaxwm.capiconfig_init()
 
@@ -51,7 +43,7 @@ capifaxwm.capiconfig_init()
 # the default values will then be set by the wm_pytools.Extract[xy]Config calls
 soxvolume="1"
 intfaxformat=0
-if not OldWebminpy and webmin.userconfig:
+if not capifaxwm._OldWebminpy and webmin.userconfig:
     soxvolume = str(wm_pytools.ExtractFloatConfig(webmin.userconfig.get('sox_volume'),soxvolume,0))
     intfaxformat = wm_pytools.ExtractIntConfig(webmin.userconfig.get('fax_download'),0,0,3)
 

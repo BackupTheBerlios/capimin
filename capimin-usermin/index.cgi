@@ -13,20 +13,8 @@ sys.stderr = sys.stdout # Send errors to browser
 import webmin
 import cs_helpers,capifaxwm,capimin_lists
 
-#webmin.init_config()
-# -----------------
-# needed, because the current webmin.py does not contain create_user_config_dirs and userconfig
-OldWebminpy=None
-showconfig=1
-try:
-    showconfig=1
-    webmin.switch_to_remote_user()
-    webmin.create_user_config_dirs()
-except NotImplementedError:
-    OldWebminpy=1
-    showconfig=None
-# -----------------
-webmin.header(webmin.text['index_title'], None, None,showconfig,1)
+capifaxwm.SwitchAndLoadConifg()
+webmin.header(webmin.text['index_title'], None, None,capifaxwm._showconfig,1)
 
 sys.stdout.flush()
 
@@ -38,10 +26,9 @@ if (capifaxwm.capiconfig_init()==-1):
 elif (capifaxwm.checkfaxuser(webmin.remote_user)==0):
     print '<p><b>%s: user "%s" is not a valid capisuite fax user<br> Your Webmin/Usermin name must match a capisuite fax user (= *nix user) </b></p>' % (webmin.text.get('error','').upper(),webmin.remote_user)
 else:
-
     print '<form action="newfax.cgi" method="POST"><input type="hidden" name="faxcreate" value="new"><input type=SUBMIT value="Newfax"></form>'
     print '\n<hr>\n'
-    if not OldWebminpy and webmin.userconfig.has_key('show_list'):
+    if not capifaxwm._OldWebminpy and webmin.userconfig.has_key('show_list'):
 	show_lists = webmin.userconfig.get('show_list').split(',',5)	
     else:
 	show_lists = [0,1,2,3,4]

@@ -1,7 +1,7 @@
 name=capisuitefax
 category=
-desc=Capisuite Fax
+desc=Capisuite
 longdesc=Manage Capisuite fax queue
-depends=1.04
-version=0.24
+depends=1.0
+version=0.1a
 usermin=1
