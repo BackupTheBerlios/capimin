@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.1 $
+#    version              : $Revision: 1.2 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -141,7 +141,7 @@ def ShowGlobal(user,cslist="faxdone",removepage=""):
 
     print '<table border="1">\n <tr bgcolor=#%s>' % webmin.tb
     print '   <th>%s</th><th>%s</th><th>%s</th><th>%s</th>' %  (webmin.text['index_id'],webmin.text['index_dialstring'],webmin.text['index_addressee'],webmin.text['index_tries'])
-    print '   <th>Time</th><th>%s</th>\n </tr>' % webmin.text['index_subject']
+    print '   <th>Time</th><th>%s</th>' % webmin.text['index_subject']
     if removepage:
 	print '   <th>%s</th>' % webmin.text['delete']
     print ' </tr>'
