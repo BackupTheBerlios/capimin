@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.3 $
+#    version              : $Revision: 1.4 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -142,42 +142,36 @@ def checkfaxuser(user,verbose=0):
 	return 1
 
 #will be replaced by a common delete job function
-def removejob(user,jobid,qtype):
+def removejob(user,jobid,cslist):
     if (checkconfig() == -1) or (checkfaxuser(user,1) == 0):
         raise CSConfigError
-    if qtype=="faxsend":
-        qpath = UsersFax_Path
-	queue = "sendq"
-	prefix="fax"
-    elif qtype=="faxreceived":
-	qpath = UsersFax_Path
-	queue = "received"
-	prefix="fax"
-    elif qtype=="voicereceived":
-	qpath = UsersVoice_Path
-	queue = "received"
-	prefix="voice"
-    else:
-	return -1
+    if not listtypes.has_key(cslist) or CheckJobID(jobid)==-1:
+	raise -1
     
-    qpath=os.path.join(qpath,user,queue)+os.sep
-
-    if  jobid=="":
-	print "<p><b> ERROR: Invalid Fax ID \""+jobid+"\" or false capisuitefax queue path: \""+qpath+"\"</b></p>"
-	return -1
-
-    job=prefix+"-"+jobid+".txt"
+    qpath=BuildListPath(cslist,user)
+    
+    job =""
+    if listtypes[cslist][1]==1:
+	job=user+"-"
+    job=job+listtypes[cslist][0]+"-"+jobid+".txt"
+    #job=prefix+"-"+jobid+".txt"
 
     if (not os.access(qpath+job,os.W_OK)):
-	print "<p><b> Fax ("+jobid+") is not valid job to remove</b></p>",job
+	print '<p><b> Job file "%s" (ID:%s) is not valid job to remove (List:%s)</b></p>' % (job,jobid,cslist)
 	return -1
     control=cs_helpers.readConfig(qpath+job)
-    datafile=control.get("GLOBAL","filename")
+    
+    # in capisuite 0.4.3, the filename options in failed and done store the original file path
+    # (e.g. /var/spool/capisuite/users/me/senq/fax-12.sff).
+    if cslist!="faxdone" and cslist!="faxfailed":
+	datafile=control.get("GLOBAL","filename")
+    else:
+	datafile=qpath+job[:-3]+"sff"
     if not datafile:
         return -1
     try:    
 	lockfile=open(qpath+job[:-3]+"lock","w")
-	# lock so that it isn't deleted while sending
+	# lock so that it isn't deleted while sending (or else)
 	fcntl.lockf(lockfile,fcntl.LOCK_EX | fcntl.LOCK_NB)
 	os.unlink(qpath+job)
 	os.unlink(datafile)

@@ -32,9 +32,9 @@ try:
 	queuetype = webmin.indata["qtype"].value	
     	
     if capifaxwm.removejob(webmin.remote_user,webmin.indata["jobid"].value,queuetype) != -1:
-	print '<p><b> Job with ID %s aborted/deleted </b></p>' %  webmin.indata["jobid"].value
+	print '<p><b> Job with ID %s removed </b></p>' %  webmin.indata["jobid"].value
     else:
-	print '<p><b> Error while remove job %s, qtype %s </b></p>' % (webmin.indata["jobid"].value,queuetype)
+	print '<p><b> Error while removing job %s, qtype %s </b></p>' % (webmin.indata["jobid"].value,queuetype)
 except capifaxwm.CSConfigError:
     print "<p><b>ERROR: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>"
 print "<p>&nbsp;</p><hr>"
