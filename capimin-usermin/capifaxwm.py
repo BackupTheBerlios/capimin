@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.15 $
+#    version              : $Revision: 1.16 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -464,7 +464,6 @@ def ConvertPS2SFF(psfile,sfffile):
     if psfile.startswith("@") or psfilename.startswith("@"):
 	raise CSConvError('Illegal char found in ps file for use with "gs"')
     #ret = os.spawnlp(os.P_WAIT,"gs","gs","-dNOPAUSE","-dQUIET","-dBATCH","-sDEVICE=cfax","-sOutputFile="+cs_helpers.escape(sfffile),cs_helpers.escape(psfile))
-    #ret = os.spawnlp(os.P_WAIT,"gs","-dNOPAUSE -dQUIET -dBATCH -sDEVICE=cfax -sOutputFile="+cs_helpers.escape(sfffile)+" "+cs_helpers.escape(psfile))
     gscmd = "gs -dNOPAUSE -dQUIET -dBATCH -sDEVICE=cfax -sOutputFile="+cs_helpers.escape(sfffile)+" "+cs_helpers.escape(psfile)
     (ret,out) = commands.getstatusoutput(gscmd)
     

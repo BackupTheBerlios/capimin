@@ -36,16 +36,6 @@ def show_askform():
     print '	<td align="center"><form method="POST" action="index.cgi"><input type="submit" value="No" name="rmno"></form></td>'
     print '   </tr></table></td></tr>\n</table>'
 
-    
-    
-#    print '<table  border="0" cellpadding="10" cellspacing="2">\n  <tr>'
-#    print '	<td align="center" colspan="2"><b>Remove (delete/abort) job %s ?</b></td>' % jobid
-#    print '  </tr><tr>'
-#    print '	<td align="center"><form method="POST" action="abort.cgi"><input type="submit" value="Yes" name="rmyes">'
-#    print '	    <input type="hidden" name="jobid" value="%s"><input type="hidden" name="qtype" value="%s"></form></td>' % (jobid,qtype)
-#    print '	<td align="center"><form method="POST" action="index.cgi"><input type="submit" value="No" name="rmno"></form></td>'
-#    print '  </tr>\n</table>'
-
 def remove_job():    
     capifaxwm.removejob(webmin.remote_user,jobid,qtype)
     webmin.header("Capisuitefax - remove job", config=None, nomodule=1,header='<meta http-equiv="refresh" content="4; URL=index.cgi">')
@@ -56,7 +46,7 @@ def remove_job():
 try:
     # get the cgi data
     formdata = cgi.FieldStorage()
-    if not formdata.has_key("qtype"):
+    if not formdata or (not formdata.has_key("qtype")):
 	raise capifaxwm.CSConfigError # might be better to use s.th. else ...
     qtype = formdata.getfirst("qtype")
     remove_gdirs = wm_pytools.ExtractIntConfig(webmin.config.get('remove_gdirs'),0,0,1)
