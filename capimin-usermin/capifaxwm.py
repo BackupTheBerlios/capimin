@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.11 $
+#    version              : $Revision: 1.12 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 import webmin
 import os, sys, re, getopt, commands, fcntl,errno,time,string,shutil,pwd
 import cs_helpers
+#for load_user_config()
+import pwd
 
 webmin.init_config()
 # check if python modul HTMLGen is installed, and if not
@@ -74,6 +76,46 @@ listtypes = {'faxsend':('fax', 0,'fax_user_dir','sendq'),
 	'faxfailed':('fax', 1,'spool_dir','failed'),
 	'faxdone':('fax', 1,'spool_dir','done'),
 	'voicereceived':('voice',0,'voice_user_dir','received')}
+
+
+
+def load_user_config():
+    """ This function is simialar as webmin's api create_user_config_dirs() function,
+    but it only reads the config and doesn't create any directories.
+    One reason for this, because without a call to switch_user, the webmin api
+    function would create the dir as root, which would then be not writeable by
+    the default Usermin user config page. (it would be possible to create the dirs
+    as the remote user in this function too, but that's currently not required by this module)
+    """
+
+    if not webmin.gconfig.has_key('userconfig'): return
+    if not webmin.remote_user_info:
+	uinfo = pwd.getpwnam(webmin.remote_user)	
+    else:
+	uinfo = webmin.remote_user_info
+    
+    if not uinfo or not uinfo[5]: return
+    
+    webmin.user_config_directory = os.path.join(uinfo[5],webmin.gconfig['userconfig'])
+    _skip_user_config_file = None
+    if not os.path.exists(webmin.user_config_directory):
+	# os.mkdir(user_config_directory,0755)
+	_skip_user_config_file = 1
+	webmin.user_config_directory=None
+    if webmin.module_name:
+	webmin.user_module_config_directory = os.path.join(webmin.user_config_directory,webmin.module_name)	
+	if not _skip_user_config_file and not os.path.exists(webmin.user_module_config_directory):
+	    # os.mkdir(user_module_config_directory,0755)
+	    skip_user_config_file = 1
+	    webmin.user_module_config_directory=None
+	webmin.userconfig={}	
+	webmin.read_file_cached(webmin.module_root_directory+os.sep+'defaultuconfig',webmin.userconfig)
+	webmin.read_file_cached(webmin.module_config_directory+os.sep+'uconfig',webmin.userconfig)
+	if not _skip_user_config_file:
+	    webmin.read_file_cached(webmin.user_module_config_directory+os.sep+'config',webmin.userconfig)
+
+
+
 
 # @brief Generates the path for a list/queue, capiconfig_init(...) pre-required
 #
@@ -178,7 +220,7 @@ def removejob(user,jobid,cslist):
     if (checkconfig() == -1) or (checkfaxuser(user,1) == 0):
         raise CSConfigError
     if not listtypes.has_key(cslist) or CheckJobID(jobid)==-1:
-	raise -1
+	raise CSConfigError
     
     qpath=BuildListPath(cslist,user)
     
@@ -189,8 +231,8 @@ def removejob(user,jobid,cslist):
     #job=prefix+"-"+jobid+".txt"
 
     if (not os.access(qpath+job,os.W_OK)):
-	print '<p><b> Job file "%s" (ID:%s) is not valid job to remove (List:%s)</b></p>' % (job,jobid,cslist)
-	return -1
+	raise CSRemoveError('Job file "%s" (ID:%s List:%s) is not valid job to remove' % (job,jobid,cslist))	
+	
     control=cs_helpers.readConfig(qpath+job)
     
     # in capisuite 0.4.3, the filename options in failed and done store the original file path
@@ -204,7 +246,7 @@ def removejob(user,jobid,cslist):
 	    fileext="cff"
 	datafile=qpath+job[:-3]+fileext
     if not datafile:
-        return -1
+	raise CSRemoveError('Job file "%s" (ID:%s List:%s) does not contain a link to a datafile (e.g. sff faxfile) => Invalid job file' % (job,jobid,cslist))
     try:    
 	lockfile=open(qpath+job[:-3]+"lock","w")
 	# lock so that it isn't deleted while sending (or else)
@@ -215,7 +257,7 @@ def removejob(user,jobid,cslist):
 	os.unlink(qpath+job[:-3]+"lock")
     except IOError,err:
 	if (err.errno in (errno.EACCES,errno.EAGAIN)):
-	    print "<p><b>Job is currently in transmission or in similar use. Can't remove.</b></p>"
+	    raise CSRemoveError("Job is currently in transmission or in similar use. Can't remove.")
 
 
 # check a dialstring, allows typical "help chars"/separators
@@ -384,3 +426,16 @@ class CSConvError(Exception):
 	self.value = value
     def __str__(self):
 	return repr(self.value)
+
+class CSRemoveError(Exception):
+    """ errortype:: to define the type of the error:
+		   0=default/undefined,1=false job,2=access error,3=job in use
+    """
+    def __init__(self, message,errortype=0):
+	self.message = message
+	self.errortype = errortype
+    def __str__(self):
+	return repr(self.value)
+    def ErrorType():
+	return self.errortype
+
