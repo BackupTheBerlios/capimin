@@ -25,6 +25,10 @@ faxfile = ""
 # for forwarding faxes:
 fjobid=""
 fqtype=""
+# for the new list form: if multiple faxes are selected, isMultiForward will be
+# set to 1, so that a warning message can be display, because only 1 faxper request
+# can be forwarded
+isMultiForward=0
 
 # userswitch can currently not be used here see capisuite bug 50
 # http://www.capisuite.de/capisuite/mantis/view_bug_page.php?f_id=0000050
@@ -107,7 +111,12 @@ def shownewform(fjobid="",fqtype=""):
         enctype='enctype="multipart/form-data"'
         title="New"
 
-    
+    if isMultiForward==1:
+        print '<table border="1"><tr bgcolor=#%s><th>====== Warning =======</th></tr>  ' % (webmin.tb)
+        print ' <tr bgcolor=#%s><td>Capimin allows you to forward only <b><i>one</i></b> fax per request,<br>'  % (webmin.cb)
+        print '     but you have selected more than one fax to forward<br>'
+        print '     You are now going to foward the fax with the JobID <b>%s</b><br>' % jobid
+        print '     (just return to the main page if you don\'t want to do this)</td></tr></table><p>&nbsp;</p>'
     #if formActionType.startswith("forward"):
 #       print "<p> The received fax document may includes information from where and when you reiceived it.<br>"
 #       print "Download and edit the fax if you don't want to send this information with the new fax</p>"
@@ -173,9 +182,11 @@ try:
     if faxcreate =="forward":
         qtype=form.getfirst("qtype")
         jobid = form.getfirst("jobid")
+        if isinstance(jobid, list):
+            isMultiForward=1
         # faxfile = importqfax(jobid,qtype) ## now done after the form is send
         faxfile=""
-        formActionType="forwardsend"
+        formActionType="forwardsend"        
         #if not faxfile:
         #    raise capifaxwm.CSConfigError
         shownewform(jobid,qtype)
