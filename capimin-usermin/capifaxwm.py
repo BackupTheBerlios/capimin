@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.12 $
+#    version              : $Revision: 1.13 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -402,6 +402,23 @@ def ConvertCFF2PDF(cfffile,pdffile):
     if not cfffile or not pdffile:
 	raise CSConvError("False parameter (no in and/or outputfile)")
 
+def ConvertPS2SFF(psfile,sfffile):
+    if not psfile or not sfffile:
+	raise CSConvError("False parameter (no in and/or outputfile)")
+    
+    psfilename = os.path.basename(psfile)
+    if not psfilename:
+	raise CSConvError("False parameter (no in and/or outputfile)")
+    if psfile.startswith("@") or psfilename.startswith("@"):
+	raise CSConvError('Illegal char found in ps file for use with "gs"')
+    #ret = os.spawnlp(os.P_WAIT,"gs","gs","-dNOPAUSE","-dQUIET","-dBATCH","-sDEVICE=cfax","-sOutputFile="+cs_helpers.escape(sfffile),cs_helpers.escape(psfile))
+    #ret = os.spawnlp(os.P_WAIT,"gs","-dNOPAUSE -dQUIET -dBATCH -sDEVICE=cfax -sOutputFile="+cs_helpers.escape(sfffile)+" "+cs_helpers.escape(psfile))
+    gscmd = "gs -dNOPAUSE -dQUIET -dBATCH -sDEVICE=cfax -sOutputFile="+cs_helpers.escape(sfffile)+" "+cs_helpers.escape(psfile)
+    (ret,out) = commands.getstatusoutput(gscmd)
+    
+    if (ret or not os.access(sfffile,os.R_OK)):
+	raise CSConvError("Failed  converting ps->sff. PS-file damaged/false format or gs not installed?")
+    
 
 
 #def abortfax(user, faxid):
@@ -422,10 +439,10 @@ class FormInputError(Exception):
 # added because Python (2.2.1) or at least my code, doesn't catch the string exception type ("conv-error","messgae")
 # when the exception is handled in another module
 class CSConvError(Exception):
-    def __init__(self, value):
-	self.value = value
+    def __init__(self, message):
+	self.message = message
     def __str__(self):
-	return repr(self.value)
+	return repr(self.message)
 
 class CSRemoveError(Exception):
     """ errortype:: to define the type of the error:
@@ -435,7 +452,7 @@ class CSRemoveError(Exception):
 	self.message = message
 	self.errortype = errortype
     def __str__(self):
-	return repr(self.value)
+	return repr(self.message)
     def ErrorType():
 	return self.errortype
 

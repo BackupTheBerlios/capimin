@@ -12,7 +12,7 @@
 #         -----------------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.9 $
+#    version              : $Revision: 1.10 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -112,7 +112,7 @@ try:
 except capifaxwm.CSConvError, e:
     webmin.header("Download", nomodule=1)    
     print "<hr>"
-    print "<p><b> Convert-%s: %s </b></p>" % (webmin.text.get('error'),e.value)
+    print "<p><b> Convert-%s: %s </b></p>" % (webmin.text.get('error'),cgi.escape(e.message,1))
     print "<hr>"
     webmin.footer([("", "module index")])   
 

@@ -14,6 +14,8 @@ import webmin
 import cs_helpers,capifaxwm,capimin_lists
 
 capifaxwm.SwitchAndLoadConifg()
+
+
 webmin.header(webmin.text['index_title'], None, None,capifaxwm._showconfig,1)
 
 sys.stdout.flush()

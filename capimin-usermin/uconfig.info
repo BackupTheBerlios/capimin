@@ -1,4 +1,7 @@
+line0=View,11
 show_list=Show list and queues in the mainpage,2,0-Sendqueue fax,1-Received fax,2-Received voice,3-Done fax,4-Failed fax
-sox_volume=Volume multiplier for wav download (see man sox),0
-fax_download=Download fax files as,1,0-SFF fax file,1-TIF images,2-Postscript,3-PDF
 remove_ask=Ask before removing a job?,1,1-yes,0-no
+
+line1=Download,11
+fax_download=Fax file format,1,0-SFF fax file,1-TIF images,2-Postscript,3-PDF
+sox_volume=Volume multiplier for wav-files  (see man sox),0

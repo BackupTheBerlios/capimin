@@ -28,9 +28,13 @@ faxfile = ""
 fjobid=""
 fqtype=""
 
+# userswitch can currently not be used here see capisuite bug 50
+# http://www.capisuite.de/capisuite/mantis/view_bug_page.php?f_id=0000050
+#capifaxwm.SwitchAndLoadConifg()
+
 capifaxwm.capiconfig_init()
 
-# Converts string values used by *this* to empty strings 
+# Converts global string values to empty strings, if they are not assigned (None)
 # used for the form output
 def NoneStringToEmpty():
     global subject,addressee,dialstring
@@ -178,21 +182,37 @@ try:
 	    # Security note: if you use python 2.3, change to tempfile.mkstemp
 	    # in python version earlier 2.3, mktemp hasn't the option to specify a directory	    
 	    newpath=os.path.join(capifaxwm.UsersFax_Path,webmin.remote_user,"sendq")+os.sep
-	    tmpjobfile = os.path.basename(tempfile.mktemp(".tempfax.sff")) 
+	    tmpjobfile = os.path.basename(tempfile.mktemp(".tempfax.sff")) 	    
 	    upfile = form['upfile']
 	    if not tmpjobfile or not newpath or not upfile.file :
-		print "<p>%s%s - %s</p>" % (newpath,tmpjobfile,upfile)
+		print "<p>%s%s - %s</p>" % (newpath,tmpjobfile,cgi.escape(upfile,1))
 		raise capifaxwm.CSConfigError
-	    if not upfile.filename.endswith("sff"):
-		print "<p><b False File format - currently only sff files are supported </b></p>"	    
-        	raise capifaxwm.FormInputError
+	    # avoid an "@" as filenamestart, which causes trouble in gs
+	    tmpjobfile = "ul_"+tmpjobfile #[1:]
 	    outFile = open(newpath+tmpjobfile,"wb")
 	    outFile.write(upfile.file.read())
 	    outFile.close()
+	    toremovefile = None
+	    if not upfile.filename.endswith("sff"):
+		# --- from capisuitefax ---
+		t=os.popen("file -b -i "+newpath+tmpjobfile+" 2>/dev/null")
+		filetype=t.read()
+		if (t.close()):
+		    raise capifaxwm.CSConvError("can't execute program \"file\"")
+		if (not re.search("application/postscript",filetype)):		    
+    		# ---end from capisuitefax ---
+		    print "<p><b False File format - currently only sff files are supported </b></p>"	    
+        	    raise capifaxwm.FormInputError
+		capifaxwm.ConvertPS2SFF(newpath+tmpjobfile,newpath+"out-"+tmpjobfile)
+		toremovefile=tmpjobfile
+		tmpjobfile ="out-"+tmpjobfile 		
+
 	    capifaxwm.sendfax(webmin.remote_user,dialstring,newpath+tmpjobfile,timec,addressee,subject)
 	    # oh no, another try....
 	    try:
 		os.unlink(newpath+tmpjobfile)
+		if toremovefile:
+		    os.unlink(newpath+toremovefile)
 	    except:
 		print "<p><b> Failed to remove tempory upload file</b></p>"
 	else:	
@@ -244,6 +264,8 @@ try:
 
 except capifaxwm.CSConfigError:
     print "<p><b>%s: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
+except capifaxwm.CSConvError,e:
+    print "<p><b>Convert- %s: %s</b></p>" % (webmin.text.get('error','').upper(),cgi.escape(e.message,1))
 except capifaxwm.FormInputError:
     shownewform(fjobid,fqtype)
 print "<hr>"
