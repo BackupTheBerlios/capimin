@@ -1,3 +1,4 @@
 show_list=Zeige folgende Listen auf der Indexseite,2,0-Faxwarteschlange Senden,1-Empfange Faxe,2-Aufgezeichnete Anrufe,3-Gesendete Faxe,4-Fehlgeschlagene Faxe
 sox_volume=Volume Multiplikator f&uuml;r wav Download (s.h.  man sox),0
 fax_download=Download-Format f&uuml;r Faxdateien,1,0-SFF Faxdatei,1-TIF Bild,2-Postscript,3-PDF
+remove_ask=Nachfragen vor dem Löschen?,1,1-ja,0-nein

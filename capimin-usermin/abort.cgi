@@ -14,11 +14,41 @@ import sys
 sys.path.append("..")
 sys.stderr = sys.stdout # Send errors to browser
 import webmin
-import cs_helpers,capifaxwm
+import cs_helpers,capifaxwm,wm_pytools
 import cgi
 
-webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
-print "<hr>"
+capifaxwm.load_user_config()
+
+jobid = None
+qtype = None
+def show_askform():
+    webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
+    print "<hr><br>"
+    print '<table border="1">' 
+    print ' <tr bgcolor=#%s><th>&nbsp;&nbsp;&nbsp;Remove (delete/abort) job %s ?&nbsp;&nbsp;&nbsp;</th></tr>  ' % (webmin.tb,jobid)
+    print ' <tr bgcolor=#%s><td>' % webmin.cb
+    print '   <table cellpadding="10" cellspacing="2" width="100%">\n    <tr>'
+    print '	<td align="center"><form method="POST" action="abort.cgi"><input type="submit" value="Yes" name="rmyes">'
+    print '	    <input type="hidden" name="jobid" value="%s"><input type="hidden" name="qtype" value="%s"></form></td>' % (jobid,qtype)
+    print '	<td align="center"><form method="POST" action="index.cgi"><input type="submit" value="No" name="rmno"></form></td>'
+    print '   </tr></table></td></tr>\n</table>'
+
+    
+    
+#    print '<table  border="0" cellpadding="10" cellspacing="2">\n  <tr>'
+#    print '	<td align="center" colspan="2"><b>Remove (delete/abort) job %s ?</b></td>' % jobid
+#    print '  </tr><tr>'
+#    print '	<td align="center"><form method="POST" action="abort.cgi"><input type="submit" value="Yes" name="rmyes">'
+#    print '	    <input type="hidden" name="jobid" value="%s"><input type="hidden" name="qtype" value="%s"></form></td>' % (jobid,qtype)
+#    print '	<td align="center"><form method="POST" action="index.cgi"><input type="submit" value="No" name="rmno"></form></td>'
+#    print '  </tr>\n</table>'
+
+def remove_job():    
+    capifaxwm.removejob(webmin.remote_user,jobid,qtype)
+    webmin.header("Capisuitefax - remove job", config=None, nomodule=1,header='<meta http-equiv="refresh" content="4; URL=index.cgi">')
+    print "<hr>"
+    print '<p><b> Job with ID %s removed </b></p>' %  jobid
+    print '<p><i> Returning to index page in 4 seconds...</i></p>'
 
 try:
     capifaxwm.capiconfig_init()
@@ -29,14 +59,26 @@ try:
 	raise capifaxwm.CSConfigError    
     if not formdata.has_key("jobid"):
 	raise capifaxwm.CSConfigError # might be better to use s.th. else ...
+    jobid = formdata.getfirst("jobid")
     if not formdata.has_key("qtype"):
 	raise capifaxwm.CSConfigError # might be better to use s.th. else ...
-    
-    if capifaxwm.removejob(webmin.remote_user,formdata.getfirst("jobid"),formdata.getfirst("qtype")) != -1:
-	print '<p><b> Job with ID %s removed </b></p>' %  formdata.getfirst("jobid")
+    qtype = formdata.getfirst("qtype")
+    if webmin.userconfig:
+	ask_before_rm = wm_pytools.ExtractIntConfig(webmin.userconfig.get('remove_ask'),1,0,1)
+    if ask_before_rm==0 or formdata.has_key("rmyes"):
+	remove_job()
     else:
-	print '<p><b> %s while removing job %s, qtype %s </b></p>' % (webmin.text.get('error','').upper(),formdata.getfirst("jobid"),formdata.getfirst("qtype"))
+	show_askform()
+	
+    
+except capifaxwm.CSRemoveError,e:
+    webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
+    print "<hr><br>"
+    print "<p><b>%s: %s</b></p>" %(webmin.text.get('error','').upper(),cgi.escape(e.message,1))
 except capifaxwm.CSConfigError:
+    webmin.header("Capisuitefax - remove job", config=None, nomodule=1)
+    print "<hr><br>"
     print "<p><b> %s: False settings/config - please start from the main module page<br> and try not to call this page directly</b></p>" % webmin.text.get('error','').upper()
 print "<p>&nbsp;</p><hr>"
 webmin.footer([("", "module index")])
+ 

@@ -1,3 +1,4 @@
 show_list=0,1,2,3,4
 sox_volume=1
 fax_download=0
+remove_ask=1

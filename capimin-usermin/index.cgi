@@ -28,8 +28,8 @@ elif (capifaxwm.checkfaxuser(webmin.remote_user)==0):
 else:
     print '<form action="newfax.cgi" method="POST"><input type="hidden" name="faxcreate" value="new"><input type=SUBMIT value="Newfax"></form>'
     print '\n<hr>\n'
-    if not capifaxwm._OldWebminpy and webmin.userconfig.has_key('show_list'):
-	show_lists = webmin.userconfig.get('show_list').split(',',5)	
+    if not capifaxwm._OldWebminpy and webmin.userconfig:
+	show_lists = webmin.userconfig.get('show_list',[0,1,2,3,4]).split(',',5)	
     else:
 	show_lists = [0,1,2,3,4]
 
