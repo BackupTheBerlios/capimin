@@ -18,7 +18,7 @@
 # Uses functions from CapSuite (cs_helper.py, capisuitefax):
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.24 $
+#    version              : $Revision: 1.25 $
 # http://www.capisuite.de
 
 # Uses Webmin-Python Module Written by Peter Astrand (&Aring;strand) <peter@cendio.se>
@@ -62,25 +62,30 @@ else:
     for ls in show_lists:
         l=int(ls)
         if l==0:
-            print "<p><b> Send Queue V III</b></p>"
+            print "<p><b> %s </b></p>" % webmin.hlink("Send Queue","sendlist")
             capimin_lists.ShowSend3(webmin.remote_user)
+            print "<hr>"
         elif l==1:
             print "<p><b> Received List: Fax</b></p>"
             capimin_lists.ShowReceived(webmin.remote_user,forwardopt=1,dldpage="download.cgi",removepage="delete.cgi")
+            print "<hr>"
         elif l==2 and capifaxwm.checkconfig("voice")!=-1:
             print "<p><b> Received List: Voice</b></p>"
             capimin_lists.ShowReceived(webmin.remote_user,fileprefix="voice",dldpage="download.cgi",
                                        removepage="delete.cgi")
+            print "<hr>"
         elif l==3:
             print "<p><b> Done List: Fax</b></p>"
             capimin_lists.ShowGlobal(webmin.remote_user,"faxdone",removepage="delete.cgi")
+            print "<hr>"
         elif l==4:
             print "<p><b> Failed List: Fax</b></p>"
-            capimin_lists.ShowGlobal(webmin.remote_user,"faxfailed",removepage="delete.cgi") 
+            capimin_lists.ShowGlobal(webmin.remote_user,"faxfailed",removepage="delete.cgi")
+            print "<hr>"
         else:
             print "<p> Invalid show_list option or list or queue unknown - listening stopped </p>"
             break
 
-print "<p>&nbsp;</p><hr>"       
+#print "<p>&nbsp;</p><hr>"       
 webmin.footer([("/", "index")])
 

@@ -132,7 +132,7 @@ def ShowSend3(user,changepage="change.cgi",formname=""):
     sendq=capifaxwm.UsersFax_Path    
     sendq=os.path.join(sendq,user,"sendq")+"/"
     #print '<p><b> %s: %s</b></p>' % (webmin.text['csfax_user'],user)
-    print '<!-- ================== Show Send queue V III =================== -->'
+    print '<!-- ================== Show Send queue V III =================== -->'    
     print '<form action=%s method=post name=%s>' % (changepage,formname)
     print '<table border="1">\n <tr bgcolor=#%s>' % webmin.tb
     print '   <th>&nbsp;</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th>' %\
@@ -199,6 +199,7 @@ def ShowSend3(user,changepage="change.cgi",formname=""):
           " !document.forms[\"%s\"].cindex.checked; for(i=0; i<document.forms[\"%s\"].cindex.length; i++)"\
           " { document.forms[\"%s\"].cindex[i].checked = !document.forms[\"%s\"].cindex[i].checked; }"\
           " return false'>%s</a>"  % (formname,formname,formname,formname,formname,webmin.text['list_invert'])
+    print '&nbsp;&nbsp;%s' % webmin.hlink("Help","sendlist")
     # submit buttons
     print '<br><br>'
     print '<input type=submit name="change" value="%s">&nbsp;<input type=submit name="changsend" value="%s">&nbsp;'\
