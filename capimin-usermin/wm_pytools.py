@@ -7,14 +7,26 @@
 
 import string
 
-def ExtractFloatConfig(configtext,default=None,fmin=None,fmax=None):
-    if not configtext or configtext=="": return default
+def ExtractFloatConfig(configtext,default=None,vmin=None,vmax=None):
+    if not configtext: return default
     try:
-	fval = float(configtext)
-	if fmin and fval<fmin:
+	confval = float(configtext)
+	if vmin and confval<vmin:
 	    return default
-	if fmax and fval>fmax:
+	if vmax and confval>vmax:
 	    return default
     except:
 	return default
-    return fval
+    return confval
+
+def ExtractIntConfig(configtext,default=None,vmin=None,vmax=None):
+    if not configtext: return default
+    try:
+	confval = int(configtext)
+	if vmin and confval<vmin:
+	    return default
+	if vmax and confval>vmax:
+	    return default
+    except:
+	return default
+    return confval

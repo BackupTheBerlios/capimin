@@ -3,7 +3,7 @@
 #            ---------------------------------------------------
 #    copyright            : (C) 2002 by Gernot Hillier
 #    email                : gernot@hillier.de
-#    version              : $Revision: 1.6 $
+#    version              : $Revision: 1.7 $
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@ import cs_helpers
 
 webmin.init_config()
        
+# setup:
+# path to the sox (audio converter) program
+sox="sox"
+
 
 # user independent path:
 UsersFax_Path=""
@@ -85,13 +89,13 @@ def capiconfig_init(file=""):
 
     CAPI_config=cs_helpers.readConfig(file)
     if not CAPI_config:
-	return -1
+	raise CSConfigError
     UsersFax_Path=cs_helpers.getOption(CAPI_config,"","fax_user_dir",default="")
-    if UsersFax_Path=="":
-	return -1
+    if not UsersFax_Path:
+	raise CSConfigError
     GlobalSpool_Path=cs_helpers.getOption(CAPI_config,"","spool_dir",default="")
-    if GlobalSpool_Path=="":
-	return -1
+    if not GlobalSpool_Path:
+	raise CSConfigError
     # optional value:
     UsersVoice_Path=cs_helpers.getOption(CAPI_config,"","voice_user_dir",default="")
     listpath = {"fax_user_dir":UsersFax_Path,"spool_dir":GlobalSpool_Path,"voice_user_dir":UsersVoice_Path}
@@ -143,7 +147,6 @@ def checkfaxuser(user,verbose=0):
     else:
 	return 1
 
-#will be replaced by a common delete job function
 def removejob(user,jobid,cslist):
     if (checkconfig() == -1) or (checkfaxuser(user,1) == 0):
         raise CSConfigError
@@ -257,8 +260,22 @@ def sendfax(user,dialstring,sourcefile,cstarttime="",addressee="",subject="",use
 
     print "<p>",sourcefile,"successful enqueued as",newname,"for",dialstring,"</p>"
     
-        
 
+
+def ConvertAudio2Sox(ulawfile,wavfile,volume=1.0):
+    raise NotImplementedError
+    if not ulawfile or not wavfile:
+	return -1
+	    
+    #la -> wav
+    # don't use stdout as sox needs a file to be able to seek in it otherwise the header will be incomplete
+    ret = os.spawnlp(os.P_WAIT,"sox","sox","-v",volume,ulawfile,wavfile)
+	
+    if (ret or not os.access(wavfile,os.R_OK)):
+	raise "conv-error","Error while calling sox. File damaged or sox not installed?"
+
+def ConvertSFF2PDF(sfffile,pdfile):
+    raise NotImplementedError
     
 
 #def abortfax(user, faxid):

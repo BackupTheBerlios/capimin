@@ -7,6 +7,18 @@
 #  (at your option) any later version.
 # http://capimin.berlios.de email: cibi@users.berlios.de
 
+# File conversation taken from:
+#         cs_helpers.py - some helper functions for CapiSuite scripts
+#         -----------------------------------------------------------
+#    copyright            : (C) 2002 by Gernot Hillier
+#    email                : gernot@hillier.de
+#    version              : $Revision: 1.5 $
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
 
 import sys
 sys.path.append("..")
@@ -84,7 +96,7 @@ try:
 	ret = os.spawnlp(os.P_WAIT,"sox","sox","-v",soxvolume,datafilename,basename+"wav")
 	
 	if (ret or not os.access(basename+"wav",os.R_OK)):
-    	    raise "conv-error","Error while calling sox. (ISDN voice->wav) Not installed?"
+    	    raise "conv-error","Error while calling sox. File damaged or sox not installed?"
 	datafilename = basename+"wav"
     
     datafile = open(datafilename,'rb').read()
