@@ -22,6 +22,8 @@ if (capifaxwm.UsersFax_Path==None):
 elif (capifaxwm.checkfaxuser(webmin.remote_user)==0):
     print '<p><b>%s: user "%s" is not a valid capisuite fax user<br> Your webmin user name must match a cs fax user (= *nix user) </b></p>' % (webmin.text['error'].upper(),webmin.remote_user)
 else:
+    print '<form action="newfax.cgi" method="POST"><input type="hidden" name="faxcreate" value="new"><input type=SUBMIT value="Newfax"></form>'
+    print "<hr>\n<p><b> Send Queue</b></p>"
     capifaxwm.showfaxlist(webmin.remote_user)
     print "<p><b> Received List: Fax</b></p>"
     capifaxwm.showreceivedlist(webmin.remote_user,forwardopt=1,dldpage="download.cgi",removepage="abort.cgi")

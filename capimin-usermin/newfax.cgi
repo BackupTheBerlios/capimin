@@ -1,5 +1,12 @@
 #!/usr/bin/python
 # forward a fax: import the data from a queue file and show a form to enter a new destination
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+
 
 import sys
 sys.path.append("..")
@@ -14,7 +21,7 @@ print "<hr>"
 subject = ""
 addressee = ""
 dialstring = ""
-formActionType = "forwardsend"
+formActionType = ""
 faxfile = ""
 
 capifaxwm.capiconfig_init()
@@ -31,6 +38,8 @@ def NoneStringToEmpty():
 # read a capisuitefax file (e.g. from the received dir)
 # and copy the fax file to a tmp location (in case the file is deleted, before it is copied in the send queue)
 # Security note: if you use python 2.3, change to tempfile.mkstemp
+# Note/TODO: since e.g. the audio conversation (download) stores a temp. file in the user's capisuite spool dir,
+#	     it might also be a good idea to do the same here (?) (permission rights, etc...)
 def importqfax(jobid,qtype):
     if not jobid or not qtype:
 	raise capifaxwm.CSConfigError
@@ -51,7 +60,7 @@ def importqfax(jobid,qtype):
     if not jobbinfile:
 	raise capifaxwm.CSConfigError
     # Security note: if you use python 2.3, change to tempfile.mkstemp
-    tmpjobfile = tempfile.mktemp(".fax.sff")
+    tmpjobfile = tempfile.mktemp(".tempfax.sff")
     shutil.copy(jobbinfile,tmpjobfile)
     
     # read optional values from the job txt file
@@ -63,10 +72,17 @@ def importqfax(jobid,qtype):
 def shownewform():
     curtime = time.localtime()
     NoneStringToEmpty()
+    enctype=""
+    title="Forward"
+    if formActionType.startswith("new"):
+	enctype='enctype="multipart/form-data"'
+	title="New"
+
+    
     
     print '<table border="1">' 
-    print ' <tr bgcolor=#%s><th>Forward</th></tr>  ' % webmin.tb
-    print ' <tr bgcolor=#%s><form METHOD="POST" ACTION="newfax.cgi"><td>' % webmin.cb
+    print ' <tr bgcolor=#%s><th>%s</th></tr>  ' % (webmin.tb,title)
+    print ' <tr bgcolor=#%s><td><form METHOD="POST" ACTION="newfax.cgi" %s>' % (webmin.cb,enctype)
     print '   <table>'
     print '    <tr><td><b>%s</b></td><td>' % webmin.text['newfax_senddate']
     print '        <input name="year" type="text" size="4" maxlength="4" value="%s">-<select name="month">' % curtime[0]
@@ -81,11 +97,14 @@ def shownewform():
     print '    <tr><td><b>Destination</b> (dialstring)</td><td><input type="text" name="dialstring" size=20 value="%s"></td></tr>' % cgi.escape(dialstring,1)
     print '    <tr><td><b>Addresse</b></td><td><input type=text name="addressee" size=20 value="%s"></td></tr>' % cgi.escape(addressee,1)
     print '    <tr><td><b>Subject</b></td><td><input type=text name="subject" size=80 value="%s"></td></tr>' % cgi.escape(subject,1)
-    print '    <input type="hidden" name="formJobFile" value="%s">' % faxfile
+    if formActionType.startswith("forward"):	
+	print '    <input type="hidden" name="formJobFile" value="%s">' % faxfile
+    else:
+	print '    <tr><td><b>Faxfile (*.sff)</b></td><td><input type="file" name="upfile"></td></tr>'
     print '    <input type="hidden" name="faxcreate" value="%s">' % formActionType
     print '    <tr><td><input type=SUBMIT value="Send"></td></tr>'
-    print '   </table>'
-    print ' </td></form></tr>'
+    print '   </table></form>'
+    print ' </td></tr>'
     print '</table>'
 
 
@@ -98,12 +117,11 @@ def shownewform():
 try:
     # get the "POST" vars
     form = cgi.FieldStorage()
+    if not form or capifaxwm.checkconfig()==-1:
+	capifaxwm.CSConfigError
             
     # check post values
-        
-
-    faxcreate = form.getfirst("faxcreate")
-    
+    faxcreate = form.getfirst("faxcreate")    
     if not faxcreate:
         faxcreate = "new"
 
@@ -111,9 +129,54 @@ try:
 	qtype=form.getfirst("qtype")
 	jobid = form.getfirst("formfaxid")
 	faxfile = importqfax(jobid,qtype)
+	formActionType="forwardsend"
 	if not faxfile:
 	    raise capifaxwm.CSConfigError
 	shownewform()
+    elif faxcreate =="new":
+	qtype=""
+	jobid=""
+	faxfile=""
+	formActionType="newsend" # TODO just for testing
+	shownewform()
+    elif faxcreate == "newsend":
+	dialstring = form.getfirst("dialstring")	
+	subject = form.getfirst("subject")	
+	addressee = form.getfirst("addressee")	
+	formActionType="newsend"	
+	
+	if capifaxwm.CheckDialString(dialstring)==-1:
+	    print "<p><b> Invalid dailstring </b></p>"	    
+            raise capifaxwm.FormInputError
+	try:
+	    formTime = form.getfirst("year")+"-"+form.getfirst("month")+"-"+form.getfirst("day")+" "+\
+		form.getfirst("hour")+":"+form.getfirst("min")	
+	    timestruct = time.strptime(formTime,"%Y-%m-%d %H:%M")
+	    timec = time.asctime(timestruct)
+	except:
+	    print "<p><b> Invalid time and/or date </b></p>"	    
+            raise capifaxwm.FormInputError
+	
+	if form.has_key("upfile"):	    
+	    newpath=os.path.join(capifaxwm.UsersFax_Path,webmin.remote_user,"sendq")+os.sep
+	    # Security note: if you use python 2.3, change to tempfile.mkstemp
+	    tmpjobfile = os.path.basename(tempfile.mktemp(".tempfax.sff")) 
+	    upfile = form['upfile']
+	    if not tmpjobfile or not newpath or not upfile.file :
+		print "<p>%s%s - %s</p>" % (newpath,tmpjobfile,upfile)
+		raise capifaxwm.CSConfigError
+	    if not upfile.filename.endswith("sff"):
+		print "<p><b False File format - currently only sff files are supported </b></p>"	    
+        	raise capifaxwm.FormInputError
+	    outFile = open(newpath+tmpjobfile,"wb")
+	    outFile.write(upfile.file.read())
+	    outFile.close()
+	    capifaxwm.sendfax(webmin.remote_user,dialstring,newpath+tmpjobfile,timec,addressee,subject)
+	    	    
+	else:
+	    print "<p><b> No file uploaded </b></p>"
+	    raise capifaxwm.FormInputError
+	
     elif faxcreate =="forwardsend": # will likely be the same as send, so it might be removed in later versions
 	dialstring = form.getfirst("dialstring")	
 	subject = form.getfirst("subject")	
