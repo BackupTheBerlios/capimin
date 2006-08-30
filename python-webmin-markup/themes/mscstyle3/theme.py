@@ -18,7 +18,9 @@
 #
 # theme_error - called instead of the error function, with the same parameters.
 
-from HTMLgen import *
+##from HTMLgen import *
+
+import markup
 
 # Choose if you use Usermin or Webmin
 # IsUsermin=0 for Webmin, IsUsermin=1 for Usermin
@@ -315,51 +317,93 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
         lowidth = 27
         lotext = text["main_switch"]
 
-    top_table = TableLite(width="100%", border="0", cellspacing="0",
+
+    hpage = markup.page()    
+
+##    top_table = TableLite(width="100%", border="0", cellspacing="0",
+##                          cellpadding="0", background="/images/top_bar/bg.jpg",
+##                          height="32")
+##    t_body = TR()
+
+    hpage.table(width="100%", border="0", cellspacing="0",
                           cellpadding="0", background="/images/top_bar/bg.jpg",
                           height="32")
-    t_body = TR()
-    TDList = [TD(IMG("/images/top_bar/left.jpg", height=32),
-                 width=4, nowrap="nowrap"),
-              TD(Href(pytheme_logo_link,
-                      IMG(pytheme_logo, width=99,
-                          height=32,
-                          border="0", alt=pytheme_logo_alt)),
-                 width="100%", nowrap="nowrap")]
+    hpage.tr.open()    
+    
+##    TDList = [TD(IMG("/images/top_bar/left.jpg", height=32),
+##                 width=4, nowrap="nowrap"),
+##              TD(Href(pytheme_logo_link,
+##                      IMG(pytheme_logo, width=99,
+##                          height=32,
+##                          border="0", alt=pytheme_logo_alt)),
+##                 width="100%", nowrap="nowrap")]
+
+    # TODO (Carsten) : missig auto alt tags for images (really needed ?)
+    hpage.td("<img src='/images/top_bar/left.jpg' height='32' />",width="4", nowrap="nowrap")
+    hpage.td.open(width="100%", nowrap="nowrap")
+    hpage.aimg(src=pytheme_logo,width=99, height=32,alt=pytheme_logo_alt,border=0,href=pytheme_logo_link)
+    hpage.td.close()
+    
 
     if not os.environ.has_key("ANONYMOUS_USER"):
         # XXX: acl.get("feedback") might not be correct
         if gconfig.get("nofeedbackcc") != 2 and acl.get("feedback"):
-            TDList.append(TD(Href("/feedback_form.cgi?module=%s" % module_name,
-                                  IMG("/images/top_bar/feedback.jpg", width=97,
-                                      height=32,
-                                      border="0", alt=text["feedback"]))))
-            TDList.append(TD(IMG("/images/top_bar/top_sep.jpg", width=12,
-                                 height=32)))
+##            TDList.append(TD(Href("/feedback_form.cgi?module=%s" % module_name,
+##                                  IMG("/images/top_bar/feedback.jpg", width=97,
+##                                      height=32,
+##                                      border="0", alt=text["feedback"]))))
+            hpage.td.open()
+            hpage.aimg(src="/images/top_bar/feedback.jpg",width=97,height=32,border=0,
+                       alt=text["feedback"],href="/feedback_form.cgi?module=%s" % module_name)
+            hpage.td.close()
+            
+##            TDList.append(TD(IMG("/images/top_bar/top_sep.jpg", width=12,
+##                                 height=32)))
+            hpage.td("<img src='/images/top_bar/top_sep.jpg' width=12 height='32' />")
 
-        TDList.append(TD(Href(logout,
-                              IMG("/images/top_bar/"+loicon, width=lowidth,
-                                  height=32,
-                                  alt=lotext, border="0"))))
+##        TDList.append(TD(Href(logout,
+##                              IMG("/images/top_bar/"+loicon, width=lowidth,
+##                                  height=32,
+##                                  alt=lotext, border="0"))))
+        hpage.td.open()
+        hpage.aimg(src="/images/top_bar/"+loicon,width=lowidth ,height=32,border=0,alt=lotext,href=logout)
+        hpage.td.close()
 
-    TDList.append(TD(Div(IMG("/images/top_bar/right.jpg", width=3, height=32)),
-                     width="3"))
+##    TDList.append(TD(Div(IMG("/images/top_bar/right.jpg", width=3, height=32)),
+##                     width="3"))
+    hpage.td.open(width=3)
+    hpage.div("<img src='/images/top_bar/right.jpg' width='3' height='32' />")
+    hpage.td.close()
+    
+##    top_table.append(t_body + TDList)
+
+    hpage.tr.close()
+    hpage.table.close()
+
+    # print top_table
 
     
-    top_table.append(t_body + TDList)
 
-    print top_table
+##    cat_top_table = TableLite(width="100%", border="0", cellspacing="0",
+##                           cellpadding="0", height="7")
+##
+##    
+##    cat_top_table.append(TR(TD(IMG("/images/top_bar/shadow.jpg",width=8, height=7),
+##                           background="/images/top_bar/shadow_bg.jpg",
+##                           nowrap="nowrap")))
 
-    cat_top_table = TableLite(width="100%", border="0", cellspacing="0",
+    hpage.table(width="100%", border="0", cellspacing="0",
                            cellpadding="0", height="7")
+    hpage.tr()
+    hpage.td(background="/images/top_bar/shadow_bg.jpg",nowrap="nowrap")
+    hpage.img(src="/images/top_bar/shadow.jpg",width=8, height=7)
+    hpage.td.close()
+    hpage.tr.close()
+    hpage.table.close()
 
-    
-    cat_top_table.append(TR(TD(IMG("/images/top_bar/shadow.jpg",width=8, height=7),
-                           background="/images/top_bar/shadow_bg.jpg",
-                           nowrap="nowrap")))
-
-    print cat_top_table
-
+    # print cat_top_table
+    print hpage
+   
 
     catnames = read_file(os.path.join(config_directory, "webmin.catnames"))
     cats = {}
@@ -390,79 +434,163 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
         per = 100.0 / float(len(cats))
 
     ## Navigation Bar START ##
+    # (Carsten) Mode loose_html for the center tag 
+    nav_page = markup.page(mode='loose_html')
+       
+##    nav_table = TableLite(width="100%", border="0", cellspacing="0",
+##                          cellpadding="0", height="57",
+##                          background="/images/nav/bg.jpg")
+    # (Carsten) The background attribute is not in the final html code with HTMLgen
+##    nav_table_body = TR(background="/images/nav/bg.jpg")
 
-    nav_table = TableLite(width="100%", border="0", cellspacing="0",
+    nav_page.table.open(width="100%", border="0", cellspacing="0",
                           cellpadding="0", height="57",
                           background="/images/nav/bg.jpg")
+    nav_page.tr.open(background="/images/nav/bg.jpg")
 
-    nav_table_body = TR(background="/images/nav/bg.jpg")
-
-    TDList = [TD(IMG("/images/nav/left.jpg", width=3, height=57),
-                 width="6", nowrap="nowrap")]
+##    TDList = [TD(IMG("/images/nav/left.jpg", width=3, height=57),
+##                 width="6", nowrap="nowrap")]
+    nav_page.td("<img src='/images/nav/left.jpg' width='3' height='57' />",width="6", nowrap="nowrap")
 
     for cat in sorted_cats:
         uri = "/?cat=%s" % cat
-        cont = Container()
+##        cont = Container()
+        nav_page.td.open(nowrap="nowrap")
+        nav_page.center()
+        nav_page.a.open(href=uri)
         if cat in available:
             if "" == cat:
-                cont.append(IMG("/images/cats/others.jpg", width=43, height=44,
-                                        border="0", alt=cat))
+##                cont.append(IMG("/images/cats/others.jpg", width=43, height=44,
+##                                        border="0", alt=cat))
+                nav_page.img(src="/images/cats/others.jpg",width=43, height=44,
+                                        border="0", alt=cat)
             else:
-                cont.append(IMG("/images/cats/%s.jpg" % cat, width=43, height=44,
-                                border="0", alt=cat))
+##                cont.append(IMG("/images/cats/%s.jpg" % cat, width=43, height=44,
+##                                border="0", alt=cat))
+                nav_page.img(src="/images/cats/%s.jpg" % cat, width=43, height=44,
+                                border="0", alt=cat)
 
         else:
-            cont.append(IMG("/images/cats/unknown.jpg", width=43, height=44,
-                            border="0", alt=cat))
+##            cont.append(IMG("/images/cats/unknown.jpg", width=43, height=44,
+##                            border="0", alt=cat))
+            nav_page.img(src="/images/cats/unknown.jpg", width=43, height=44,
+                            border="0", alt=cat)
 
-        cont.append(BR())
-        cont.append(chop_font(cats[cat]))
+##        cont.append(BR())
+##        cont.append(chop_font(cats[cat]))
+        nav_page.br()
+        # (carsten) : str is needed becaus chop_font might return a HTMLgen instance
+        nav_page.add(str(chop_font(cats[cat])))
+        
                 
-        TDList.append(TD(Center(Href(uri, cont)), nowrap="nowrap"))
-        TDList.append(TD(IMG("/images/nav/sep.jpg", width=17, height=57),
-                         width=17))
+##        TDList.append(TD(Center(Href(uri, cont)), nowrap="nowrap"))
+        nav_page.a.close()
+        nav_page.center.close()
+        nav_page.td.close()
 
-    TDList.append(TD(Container('&nbsp;'), nowrap="nowrap", width="100%"))
+##        TDList.append(TD(IMG("/images/nav/sep.jpg", width=17, height=57),
+##                         width=17))
+        nav_page.td.open(width=17)
+        nav_page.img(src="/images/nav/sep.jpg", width=17, height=57)
+        nav_page.td.close()       
+        
 
-    nav_table.append(nav_table_body + TDList)
+##    TDList.append(TD(Container('&nbsp;'), nowrap="nowrap", width="100%"))
+    nav_page.td("&nbsp;",nowrap="nowrap", width="100%")
+
+##    nav_table.append(nav_table_body + TDList)
+
+    nav_page.tr.close()
+    nav_page.table.close()
 
     # UGLY!
     # The reason we replace all "\n" with "" is that Mozilla
     # won't render the menu correctly otherwise. GAAAAH!
+    # Note (Carsten) : could be done by a simple change in page class
     
-    print str(nav_table).replace("\n", "")
+    # print str(nav_table).replace("\n", "")
+    print str(nav_page).replace("\n", "")
+    
+    
+##    nav_under_table = TableLite(width="100%", border="0", cellspacing="0",
+##                                cellpadding="0",
+##                                background="/images/nav/bottom_bg.jpg",
+##                                height="4")
+##
+##    nav_under_table.append(TR()+[TD(IMG("/images/nav/bottom_left.jpg",
+##                                        width=3, height=4), width="100%")])
 
-    nav_under_table = TableLite(width="100%", border="0", cellspacing="0",
-                                cellpadding="0",
-                                background="/images/nav/bottom_bg.jpg",
-                                height="4")
+##    print nav_under_table
 
-    nav_under_table.append(TR()+[TD(IMG("/images/nav/bottom_left.jpg",
-                                        width=3, height=4), width="100%")])
+    nav_under_page = markup.page()
+    nav_under_page.table(width="100%", border="0", cellspacing="0",cellpadding="0",
+                         background="/images/nav/bottom_bg.jpg",height="4")
+    nav_under_page.tr()
+    nav_under_page.td.open(width="100%")
+    nav_under_page.img(src="/images/nav/bottom_left.jpg",width=3, height=4)
+    nav_under_page.td.close()
+    nav_under_page.tr.close()
+    nav_under_page.table.close()
+    
 
-    print nav_under_table
-
-    tab_under_modcats = TableLite(width="100%", border="0",
-                                  cellspacing="0", cellpadding="0",
-                                  background="/images/nav/bottom_shadow2.jpg")
+##    tab_under_modcats = TableLite(width="100%", border="0",
+##                                  cellspacing="0", cellpadding="0",
+##                                  background="/images/nav/bottom_shadow2.jpg")
+    nav_under_page.table(width="100%", border="0",cellspacing="0",
+                         cellpadding="0",background="/images/nav/bottom_shadow2.jpg")
 
     # ---new/changed display (user) preference tab
-    tab_under_modcats_prefs=None
-    tab_under_modcats_help=None
+##    tab_under_modcats_prefs=None
+##    tab_under_modcats_help=None
+    ptab_under_modcats_prefs=None
+    ptab_under_modcats_help=None
+    # woraround because "if ptab_under_modcats_help" causes an error when it is actually not None
+    isptab_under_modcats_prefs=False
+    isptab_under_modcats_help=False
+    
+    
     if help:        
         if type(help) == types.ListType:
             helplink =  hlink(text["header_help"], help[0], help[1])
         else:
             helplink = hlink(text["header_help"], help)
-        tab_under_modcats_help = TableLite(border="0",cellspacing="0", cellpadding="0")
-        tab_under_modcats_help.append(TR() + [TD(IMG("/images/tabs/left.jpg", width=12, height="21"),background="/images/tabs/bg.jpg")]+\
-                                [TD(Code(helplink),background="/images/tabs/bg.jpg")]+\
-                                [TD(IMG("/images/tabs/right.jpg", width=15, height="21"),background="/images/tabs/bg.jpg")])    
-        tab_under_modcats_help.append(TR() + [TD(IMG("/images/tabs/right_bottom.jpg", width=12, height="4"))]+\
-                                [TD(IMG("/images/tabs/bottom.jpg", width=17, height="4"),background="/images/tabs/bottom.jpg")]+\
-                                [TD(IMG("/images/tabs/left_bottom.jpg", width=15, height="4"))])    
+##        tab_under_modcats_help = TableLite(border="0",cellspacing="0", cellpadding="0")
+##        tab_under_modcats_help.append(TR() + [TD(IMG("/images/tabs/left.jpg", width=12, height="21"),background="/images/tabs/bg.jpg")]+\
+##                                [TD(Code(helplink),background="/images/tabs/bg.jpg")]+\
+##                                [TD(IMG("/images/tabs/right.jpg", width=15, height="21"),background="/images/tabs/bg.jpg")])    
+##        tab_under_modcats_help.append(TR() + [TD(IMG("/images/tabs/right_bottom.jpg", width=12, height="4"))]+\
+##                                [TD(IMG("/images/tabs/bottom.jpg", width=17, height="4"),background="/images/tabs/bottom.jpg")]+\
+##                                [TD(IMG("/images/tabs/left_bottom.jpg", width=15, height="4"))])
 
+        ptab_under_modcats_help = markup.page()
+        ptab_under_modcats_help.table(border="0",cellspacing="0", cellpadding="0")
+        ptab_under_modcats_help.tr()
+        ptab_under_modcats_help.td(background="/images/tabs/bg.jpg")
+        ptab_under_modcats_help.img(src="/images/tabs/left.jpg", width=12, height="21")
+        ptab_under_modcats_help.td.close()
+        # TODO (carsten) : Check what HTMLgen Code(helplink) does
+        ptab_under_modcats_help.td(background="/images/tabs/bg.jpg")
+        ptab_under_modcats_help.code(helplink)
+        ptab_under_modcats_help.td.close()
+        ptab_under_modcats_help.td(background="/images/tabs/bg.jpg")
+        ptab_under_modcats_help.img(src="/images/tabs/right.jpg", width=15, height="21")
+        ptab_under_modcats_help.td.close()
+        ptab_under_modcats_help.tr.close()
 
+        ptab_under_modcats_help.tr()
+        ptab_under_modcats_help.td()
+        ptab_under_modcats_help.img(src="/images/tabs/right_bottom.jpg", width=12, height="4")
+        ptab_under_modcats_help.td.close()
+        ptab_under_modcats_help.td(background="/images/tabs/bottom.jpg")
+        ptab_under_modcats_help.img(src="/images/tabs/bottom.jpg", width=17, height="4")
+        ptab_under_modcats_help.td.close()
+        ptab_under_modcats_help.td()
+        ptab_under_modcats_help.img(src="/images/tabs/left_bottom.jpg", width=15, height="4")
+        ptab_under_modcats_help.td.close()
+        ptab_under_modcats_help.tr.close()
+        ptab_under_modcats_help.table.close()
+        isptab_under_modcats_help = True
+        
     
     if config:
         access = get_module_acl();
@@ -473,32 +601,91 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
                 cprog = "config.cgi"            
     
             uri='%s/%s?%s' % (gconfig.get("webprefix", ""), cprog, module_name)	    
-            tab_under_modcats_prefs = TableLite(border="0",cellspacing="0", cellpadding="0")
-            tab_under_modcats_prefs.append(TR() + [TD(IMG("/images/tabs/left.jpg", width=12, height="21"),background="/images/tabs/bg.jpg")]+\
-                                    [TD(Href(uri,text["header_config"]),background="/images/tabs/bg.jpg")]+\
-                                    [TD(IMG("/images/tabs/right.jpg", width=15, height="21"),background="/images/tabs/bg.jpg")])    
-            tab_under_modcats_prefs.append(TR() + [TD(IMG("/images/tabs/right_bottom.jpg", width=12, height="4"))]+\
-                                    [TD(IMG("/images/tabs/bottom.jpg", width=17, height="4"),background="/images/tabs/bottom.jpg")]+\
-                                    [TD(IMG("/images/tabs/left_bottom.jpg", width=15, height="4"))])    
+##            tab_under_modcats_prefs = TableLite(border="0",cellspacing="0", cellpadding="0")
+##            tab_under_modcats_prefs.append(TR() + [TD(IMG("/images/tabs/left.jpg", width=12, height="21"),background="/images/tabs/bg.jpg")]+\
+##                                    [TD(Href(uri,text["header_config"]),background="/images/tabs/bg.jpg")]+\
+##                                    [TD(IMG("/images/tabs/right.jpg", width=15, height="21"),background="/images/tabs/bg.jpg")])    
+##            tab_under_modcats_prefs.append(TR() + [TD(IMG("/images/tabs/right_bottom.jpg", width=12, height="4"))]+\
+##                                    [TD(IMG("/images/tabs/bottom.jpg", width=17, height="4"),background="/images/tabs/bottom.jpg")]+\
+##                                    [TD(IMG("/images/tabs/left_bottom.jpg", width=15, height="4"))])
 
-    tab_under_modcats_inner = TableLite(width="100%", border="0",
-                                  cellspacing="0", cellpadding="0",
-                                  background="/images/nav/bottom_shadow2.jpg")
-    tab_under_modcats_inner.append(TR() + [TD(IMG("/images/nav/bottom_shadow.jpg", width=43, height="9"))])
-    if tab_under_modcats_help or tab_under_modcats_prefs:
-        tabTR = TR()
-        if tab_under_modcats_help:
-            tabTR = tabTR + [TD(tab_under_modcats_help)]
-        if tab_under_modcats_prefs:
-            tabTR = tabTR + [TD(tab_under_modcats_prefs)]
-        tabTR = tabTR + [TD(tab_under_modcats_inner,background="/images/nav/bottom_shadow2.jpg",width="100%",nowrap="nowarp",valign="top")]
-        tab_under_modcats(tabTR)
+            ptab_under_modcats_prefs = markup.page()
+            ptab_under_modcats_prefs.table(border="0",cellspacing="0", cellpadding="0")
+            ptab_under_modcats_prefs.tr()
+            ptab_under_modcats_prefs.td(background="/images/tabs/bg.jpg")
+            ptab_under_modcats_prefs.img(src="/images/tabs/left.jpg", width=12, height="21")
+            ptab_under_modcats_prefs.td.close()
+            ptab_under_modcats_prefs.td(background="/images/tabs/bg.jpg")
+            ptab_under_modcats_prefs.a(text["header_config"],href=uri)
+            ptab_under_modcats_prefs.td.close()
+            ptab_under_modcats_prefs.td(background="/images/tabs/bg.jpg")
+            ptab_under_modcats_prefs.img(src="/images/tabs/right.jpg",width=15, height="21")
+            ptab_under_modcats_prefs.td.close()
+            ptab_under_modcats_prefs.tr.close()
+            ptab_under_modcats_prefs.tr()
+            ptab_under_modcats_prefs.td()
+            ptab_under_modcats_prefs.img(src="/images/tabs/right_bottom.jpg", width=12, height="4")
+            ptab_under_modcats_prefs.td.close()
+            ptab_under_modcats_prefs.td(background="/images/tabs/bottom.jpg")
+            ptab_under_modcats_prefs.img(src="/images/tabs/bottom.jpg", width=17, height="4")
+            ptab_under_modcats_prefs.td.close()
+            ptab_under_modcats_prefs.td()
+            ptab_under_modcats_prefs.img(src="/images/tabs/left_bottom.jpg", width=15, height="4")
+            ptab_under_modcats_prefs.td.close()
+            ptab_under_modcats_prefs.tr.close()
+            ptab_under_modcats_prefs.table.close()
+            isptab_under_modcats_prefs=True
+
+##    tab_under_modcats_inner = TableLite(width="100%", border="0",
+##                                  cellspacing="0", cellpadding="0",
+##                                  background="/images/nav/bottom_shadow2.jpg")
+##    tab_under_modcats_inner.append(TR() + [TD(IMG("/images/nav/bottom_shadow.jpg", width=43, height="9"))])
+
+    
+
+    # workariund, see above
+    # if ptab_under_modcats_prefs or ptab_under_modcats_help:
+    if isptab_under_modcats_prefs or isptab_under_modcats_help:
+##        tabTR = TR()
+        nav_under_page.tr()
+        if isptab_under_modcats_help==True:
+##            tabTR = tabTR + [TD(tab_under_modcats_help)]
+            nav_under_page.td(str(ptab_under_modcats_help))
+        if isptab_under_modcats_prefs==True:
+##            tabTR = tabTR + [TD(tab_under_modcats_prefs)]
+            nav_under_page.td(str(ptab_under_modcats_prefs))            
+##        tabTR = tabTR + [TD(tab_under_modcats_inner,background="/images/nav/bottom_shadow2.jpg",width="100%",nowrap="nowarp",valign="top")]
+        nav_under_page.td(background="/images/nav/bottom_shadow2.jpg",width="100%",nowrap="nowarp",valign="top")
+        # tab_under_modcats_inner 
+        nav_under_page.table(width="100%", border="0",cellspacing="0", cellpadding="0",
+                         background="/images/nav/bottom_shadow2.jpg")
+        nav_under_page.tr()
+        nav_under_page.td()
+        nav_under_page.img(src="/images/nav/bottom_shadow.jpg", width=43, height="9")
+        nav_under_page.td.close()
+        nav_under_page.tr.close()
+        nav_under_page.table.close()
+        # end tab_under_modcats_inner
+        nav_under_page.td.close()
+        nav_under_page.tr.close()
+
+##        tab_under_modcats(tabTR)
         # tab_under_modcats.append(TR() + [TD(tab_under_modcats_prefs)]+ [TD(tab_under_modcats_inner,background="/images/nav/bottom_shadow2.jpg",width="100%",nowrap="nowarp",valign="top")])	
     else:
-        tab_under_modcats.append(TR() + [TD(IMG("/images/nav/bottom_shadow.jpg", width=43, height="9"))])    
-    print tab_under_modcats
+##        tab_under_modcats.append(TR() + [TD(IMG("/images/nav/bottom_shadow.jpg", width=43, height="9"))])
+        nav_under_page.tr()
+        nav_under_page.td()
+        nav_under_page.img(src="/images/nav/bottom_shadow.jpg", width=43, height="9")
+        nav_under_page.td.close()
+        nav_under_page.tr.close()
+    nav_under_page.table.close()
+    
+##    print tab_under_modcats
 
-    print "<br>"
+    
+##    print "<br>"
+    nav_under_page.br()
+    print nav_under_page
     # ----end new display (user) preference tab
 
 
@@ -508,21 +695,46 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
         title = title.replace("&uuml;", "ü")
         title = title.replace("&nbsp;", " ")
 
-        title_table = TableLite(border=0, cellpadding=0, cellspacing=0,
+        print "<!-- ================== New Markup code =================== -->"
+##        title_table = TableLite(border=0, cellpadding=0, cellspacing=0,
+##                                width="95%", align="center")
+##        inr_tt = TableLite(border=0, cellpadding=0, cellspacing=0, height=20)
+##        inr_tt_body = TR()
+##        inr_tt_TDList = [TD(IMG("/images/tabs/blue_left.jpg", width=13,
+##                                height=22), bgcolor="#bae3ff"),
+##                         TD(Strong(title), bgcolor="#bae3ff"),
+##                         TD(IMG("/images/tabs/blue_right.jpg", width=13,
+##                                height=22), bgcolor="#bae3ff")]
+##        inr_tt.append(inr_tt_body + inr_tt_TDList)
+##        title_table.append(TR(TD(inr_tt)))
+
+        ptitle_table = markup.page()
+        ptitle_table.table(border=0, cellpadding=0, cellspacing=0,
                                 width="95%", align="center")
-        inr_tt = TableLite(border=0, cellpadding=0, cellspacing=0, height=20)
-        inr_tt_body = TR()
-        inr_tt_TDList = [TD(IMG("/images/tabs/blue_left.jpg", width=13,
-                                height=22), bgcolor="#bae3ff"),
-                         TD(Strong(title), bgcolor="#bae3ff"),
-                         TD(IMG("/images/tabs/blue_right.jpg", width=13,
-                                height=22), bgcolor="#bae3ff")]
-        inr_tt.append(inr_tt_body + inr_tt_TDList)
-        title_table.append(TR(TD(inr_tt)))
+        ptitle_table.tr()
+        ptitle_table.td()
+        ptitle_table.table(border=0, cellpadding=0, cellspacing=0, height=20)
+        ptitle_table.tr()
+        ptitle_table.td(bgcolor="#bae3ff")
+        ptitle_table.img(src="/images/tabs/blue_left.jpg", width=13,height=22)
+        ptitle_table.td.close()
+        ptitle_table.td(bgcolor="#bae3ff")
+        ptitle_table.strong(title)
+        ptitle_table.td.close()
+        ptitle_table.td(bgcolor="#bae3ff")
+        ptitle_table.img(src="/images/tabs/blue_right.jpg", width=13,height=22)
+        ptitle_table.td.close()
+        ptitle_table.tr.close()
+        ptitle_table.table.close()
+        ptitle_table.td.close()
+        ptitle_table.tr.close()
+        ptitle_table.table.close()        
 
-        print title_table
-
+##        print title_table
+        print ptitle_table
+        print "<!-- ================== New Markup code end =================== -->"
         theme_prebody()
+    
 
 def theme_prebody():
     print "<table border=0 width=\"95%\" align=\"center\" cellspacing=0 cellpadding=0><tr><td bgcolor=#ffffff>\n";
@@ -531,9 +743,16 @@ def theme_prebody():
 def theme_footer(links, noendbody=None):
     print "</table></table>"
 
-    foot_table = TableLite(border=0, width="100%", align="center",
-                           cellspacing=0, cellpadding=0, bgcolor="#6696bc")
-    cont = Container()
+##    foot_table = TableLite(border=0, width="100%", align="center",
+##                           cellspacing=0, cellpadding=0, bgcolor="#6696bc")
+##    cont = Container()
+
+    cont = markup.page()
+    cont.table.open(border=0,width="100%", align="center",
+                     cellspacing=0, cellpadding=0, bgcolor="#6696bc")
+    cont.tr.open()
+    cont.td.open()
+    
 
     for i in range(len(links)):
         uri, uritxt = links[i]
@@ -544,26 +763,36 @@ def theme_footer(links, noendbody=None):
         elif "?" == uri[0] and module_name:
             uri = "/%s/%s" % (module_name, uri)
         if 0 == i:
-            cont.append("&nbsp;",
-                             Href(uri, IMG("/images/arrow.jpg",
-                                           align="middle", border="0",
-                                           alt="<-")))
+##            cont.append("&nbsp;",
+##                             Href(uri, IMG("/images/arrow.jpg",
+##                                           align="middle", border="0",
+##                                           alt="<-")))
+            cont.add("&nbsp;")
+            # markups aimg is currently not working            
+            cont.a("<img src='/images/arrow.jpg' alt='&lt;-' border='0' align='middle' />",href=uri)            
+            
         else:
-            cont.append("&nbsp;")
+            cont.add("&nbsp;")
 
-        cont.append("&nbsp;", Href(uri, textsub("main_return", uritxt)))
+##        cont.append("&nbsp;", Href(uri, textsub("main_return", uritxt)))
+        cont.add("&nbsp;")
+        cont.a(textsub("main_return", uritxt),href=uri)
+        
 
-    foot_table.append(TR(TD(cont)))
+##    foot_table.append(TR(TD(cont)))
+    cont.td.close()
+    cont.tr.close()
+    cont.table.close()
 
-    print foot_table
+    print cont
                     
 
 
 def chop_font(s):
     if gconfig.get("texttitles"):
         return s
-
-    cont = Container()
+    pcont = markup.page()
+##    cont = Container()
     for char in s:
         ll = ord(char)
         gif = "%s.gif" % ll
@@ -571,8 +800,12 @@ def chop_font(s):
         alt=char
         if " " == char:
             alt = "&nbsp;"
-        cont.append(IMG("/images/letters2/%s" % gif,
+##        cont.append(IMG("/images/letters2/%s" % gif,
+##                        width=sz[0], height=sz[1], alt=char, border="0",
+##                        align="bottom"))
+        pcont.img(src="/images/letters2/%s" % gif,
                         width=sz[0], height=sz[1], alt=char, border="0",
-                        align="bottom"))
+                        align="bottom")
 
-    return cont
+##    return cont
+    return pcont
