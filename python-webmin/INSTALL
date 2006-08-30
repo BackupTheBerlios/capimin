@@ -1,0 +1,35 @@
+Install python-webmin
+======================
+
+For Webmin and Usermin:
+-----------------------
+
+just type
+
+make install
+
+to install python-webmin in /opt/python-webmin.
+Then run
+
+setup.sh
+
+to create a link file (python-webmin.pth) in {python libpath}/site-packages.
+
+Installing the examples:
+------------------------
+
+type
+
+make install-examples
+
+or if Webmin is installed in an other path than "/usr/libexec/webmin":
+
+make install-examples WEBMINDIR=[path to Webmin]
+(see the Webmin installation)
+
+You also have to delete /etc/webmin/module.infos.cache to list the examples
+in the Webmin module config page. (see  
+http://www.webmin.com/modules.html#files "When you first create a new module...")
+This is necessary because "make install-examples" doesn't install the examples 
+through the Webmin modules install page.
+
