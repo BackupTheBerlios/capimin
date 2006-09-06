@@ -21,6 +21,8 @@
 ##from HTMLgen import *
 
 import markup
+# for a nested element
+from markup import oneliner as e
 
 # Choose if you use Usermin or Webmin
 # IsUsermin=0 for Webmin, IsUsermin=1 for Usermin
@@ -339,9 +341,9 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
 ##                 width="100%", nowrap="nowrap")]
 
     # TODO (Carsten) : missig auto alt tags for images (really needed ?)
-    hpage.td("<img src='/images/top_bar/left.jpg' height='32' />",width="4", nowrap="nowrap")
+    hpage.td(e.img(src="/images/top_bar/left.jpg", height="32"),width="4", nowrap="nowrap")
     hpage.td.open(width="100%", nowrap="nowrap")
-    hpage.aimg(src=pytheme_logo,width=99, height=32,alt=pytheme_logo_alt,border=0,href=pytheme_logo_link)
+    hpage.a(e.img(src=pytheme_logo,width=99, height=32,alt=pytheme_logo_alt,border=0),href=pytheme_logo_link)
     hpage.td.close()
     
 
@@ -353,27 +355,25 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
 ##                                      height=32,
 ##                                      border="0", alt=text["feedback"]))))
             hpage.td.open()
-            hpage.aimg(src="/images/top_bar/feedback.jpg",width=97,height=32,border=0,
-                       alt=text["feedback"],href="/feedback_form.cgi?module=%s" % module_name)
+            hpage.a(e.img(src="/images/top_bar/feedback.jpg",width=97,height=32,border=0,
+                       alt=text["feedback"]),href="/feedback_form.cgi?module=%s" % module_name)
             hpage.td.close()
             
 ##            TDList.append(TD(IMG("/images/top_bar/top_sep.jpg", width=12,
 ##                                 height=32)))
-            hpage.td("<img src='/images/top_bar/top_sep.jpg' width=12 height='32' />")
+            hpage.td(e.img(src="/images/top_bar/top_sep.jpg", width=12, height=32))
 
 ##        TDList.append(TD(Href(logout,
 ##                              IMG("/images/top_bar/"+loicon, width=lowidth,
 ##                                  height=32,
 ##                                  alt=lotext, border="0"))))
         hpage.td.open()
-        hpage.aimg(src="/images/top_bar/"+loicon,width=lowidth ,height=32,border=0,alt=lotext,href=logout)
+        hpage.a(e.img(src="/images/top_bar/"+loicon,width=lowidth ,height=32,border=0,alt=lotext),href=logout)
         hpage.td.close()
 
 ##    TDList.append(TD(Div(IMG("/images/top_bar/right.jpg", width=3, height=32)),
 ##                     width="3"))
-    hpage.td.open(width=3)
-    hpage.div("<img src='/images/top_bar/right.jpg' width='3' height='32' />")
-    hpage.td.close()
+    hpage.td(e.div(e.img(src="/images/top_bar/right.jpg", width="3", height="32")),width=3)
     
 ##    top_table.append(t_body + TDList)
 
@@ -395,9 +395,8 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
     hpage.table(width="100%", border="0", cellspacing="0",
                            cellpadding="0", height="7")
     hpage.tr()
-    hpage.td(background="/images/top_bar/shadow_bg.jpg",nowrap="nowrap")
-    hpage.img(src="/images/top_bar/shadow.jpg",width=8, height=7)
-    hpage.td.close()
+    hpage.td(e.img(src="/images/top_bar/shadow.jpg",width=8, height=7),
+             background="/images/top_bar/shadow_bg.jpg",nowrap="nowrap")
     hpage.tr.close()
     hpage.table.close()
 
@@ -450,7 +449,7 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
 
 ##    TDList = [TD(IMG("/images/nav/left.jpg", width=3, height=57),
 ##                 width="6", nowrap="nowrap")]
-    nav_page.td("<img src='/images/nav/left.jpg' width='3' height='57' />",width="6", nowrap="nowrap")
+    nav_page.td(e.img(src="/images/nav/left.jpg", width="3", height="57"),width="6", nowrap="nowrap")
 
     for cat in sorted_cats:
         uri = "/?cat=%s" % cat
@@ -479,7 +478,7 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
 ##        cont.append(BR())
 ##        cont.append(chop_font(cats[cat]))
         nav_page.br()
-        # (carsten) : str is needed becaus chop_font might return a HTMLgen instance
+        # (carsten) : str is needed becaus chop_font might return a HTMLgen/markup instance
         nav_page.add(str(chop_font(cats[cat])))
         
                 
@@ -490,10 +489,7 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
 
 ##        TDList.append(TD(IMG("/images/nav/sep.jpg", width=17, height=57),
 ##                         width=17))
-        nav_page.td.open(width=17)
-        nav_page.img(src="/images/nav/sep.jpg", width=17, height=57)
-        nav_page.td.close()       
-        
+        nav_page.td(e.img(src="/images/nav/sep.jpg", width=17, height=57),width=17)
 
 ##    TDList.append(TD(Container('&nbsp;'), nowrap="nowrap", width="100%"))
     nav_page.td("&nbsp;",nowrap="nowrap", width="100%")
@@ -526,12 +522,10 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
     nav_under_page.table(width="100%", border="0", cellspacing="0",cellpadding="0",
                          background="/images/nav/bottom_bg.jpg",height="4")
     nav_under_page.tr()
-    nav_under_page.td.open(width="100%")
-    nav_under_page.img(src="/images/nav/bottom_left.jpg",width=3, height=4)
-    nav_under_page.td.close()
+    nav_under_page.td(e.img(src="/images/nav/bottom_left.jpg",width=3, height=4),width="100%")
     nav_under_page.tr.close()
     nav_under_page.table.close()
-    
+
 
 ##    tab_under_modcats = TableLite(width="100%", border="0",
 ##                                  cellspacing="0", cellpadding="0",
@@ -565,28 +559,21 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
         ptab_under_modcats_help = markup.page()
         ptab_under_modcats_help.table(border="0",cellspacing="0", cellpadding="0")
         ptab_under_modcats_help.tr()
-        ptab_under_modcats_help.td(background="/images/tabs/bg.jpg")
-        ptab_under_modcats_help.img(src="/images/tabs/left.jpg", width=12, height="21")
-        ptab_under_modcats_help.td.close()
-        # TODO (carsten) : Check what HTMLgen Code(helplink) does
+        ptab_under_modcats_help.td(e.img(src="/images/tabs/left.jpg", width=12, height="21"),
+                                   background="/images/tabs/bg.jpg")
+        # TODO (carsten) : Check what HTMLgen Code(helplink) does - Update: already done?
         ptab_under_modcats_help.td(background="/images/tabs/bg.jpg")
         ptab_under_modcats_help.code(helplink)
         ptab_under_modcats_help.td.close()
-        ptab_under_modcats_help.td(background="/images/tabs/bg.jpg")
-        ptab_under_modcats_help.img(src="/images/tabs/right.jpg", width=15, height="21")
-        ptab_under_modcats_help.td.close()
+        ptab_under_modcats_help.td(e.img(src="/images/tabs/right.jpg", width=15, height="21"),
+                                   background="/images/tabs/bg.jpg")
         ptab_under_modcats_help.tr.close()
 
         ptab_under_modcats_help.tr()
-        ptab_under_modcats_help.td()
-        ptab_under_modcats_help.img(src="/images/tabs/right_bottom.jpg", width=12, height="4")
-        ptab_under_modcats_help.td.close()
-        ptab_under_modcats_help.td(background="/images/tabs/bottom.jpg")
-        ptab_under_modcats_help.img(src="/images/tabs/bottom.jpg", width=17, height="4")
-        ptab_under_modcats_help.td.close()
-        ptab_under_modcats_help.td()
-        ptab_under_modcats_help.img(src="/images/tabs/left_bottom.jpg", width=15, height="4")
-        ptab_under_modcats_help.td.close()
+        ptab_under_modcats_help.td(e.img(src="/images/tabs/right_bottom.jpg", width=12, height="4"))
+        ptab_under_modcats_help.td(e.img(src="/images/tabs/bottom.jpg", width=17, height="4"),
+                                   background="/images/tabs/bottom.jpg")
+        ptab_under_modcats_help.td(e.img(src="/images/tabs/left_bottom.jpg", width=15, height="4"))
         ptab_under_modcats_help.tr.close()
         ptab_under_modcats_help.table.close()
         isptab_under_modcats_help = True
@@ -612,26 +599,17 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
             ptab_under_modcats_prefs = markup.page()
             ptab_under_modcats_prefs.table(border="0",cellspacing="0", cellpadding="0")
             ptab_under_modcats_prefs.tr()
-            ptab_under_modcats_prefs.td(background="/images/tabs/bg.jpg")
-            ptab_under_modcats_prefs.img(src="/images/tabs/left.jpg", width=12, height="21")
-            ptab_under_modcats_prefs.td.close()
-            ptab_under_modcats_prefs.td(background="/images/tabs/bg.jpg")
-            ptab_under_modcats_prefs.a(text["header_config"],href=uri)
-            ptab_under_modcats_prefs.td.close()
-            ptab_under_modcats_prefs.td(background="/images/tabs/bg.jpg")
-            ptab_under_modcats_prefs.img(src="/images/tabs/right.jpg",width=15, height="21")
-            ptab_under_modcats_prefs.td.close()
+            ptab_under_modcats_prefs.td(e.img(src="/images/tabs/left.jpg", width=12, height="21"),
+                                        background="/images/tabs/bg.jpg")
+            ptab_under_modcats_prefs.td(e.a(text["header_config"],href=uri),background="/images/tabs/bg.jpg")
+            ptab_under_modcats_prefs.td(e.img(src="/images/tabs/right.jpg",width=15, height="21"),
+                                        background="/images/tabs/bg.jpg")
             ptab_under_modcats_prefs.tr.close()
             ptab_under_modcats_prefs.tr()
-            ptab_under_modcats_prefs.td()
-            ptab_under_modcats_prefs.img(src="/images/tabs/right_bottom.jpg", width=12, height="4")
-            ptab_under_modcats_prefs.td.close()
-            ptab_under_modcats_prefs.td(background="/images/tabs/bottom.jpg")
-            ptab_under_modcats_prefs.img(src="/images/tabs/bottom.jpg", width=17, height="4")
-            ptab_under_modcats_prefs.td.close()
-            ptab_under_modcats_prefs.td()
-            ptab_under_modcats_prefs.img(src="/images/tabs/left_bottom.jpg", width=15, height="4")
-            ptab_under_modcats_prefs.td.close()
+            ptab_under_modcats_prefs.td(e.img(src="/images/tabs/right_bottom.jpg", width=12, height="4"))
+            ptab_under_modcats_prefs.td(e.img(src="/images/tabs/bottom.jpg", width=17, height="4"),
+                                        background="/images/tabs/bottom.jpg")
+            ptab_under_modcats_prefs.td(e.img(src="/images/tabs/left_bottom.jpg", width=15, height="4"))
             ptab_under_modcats_prefs.tr.close()
             ptab_under_modcats_prefs.table.close()
             isptab_under_modcats_prefs=True
@@ -660,9 +638,7 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
         nav_under_page.table(width="100%", border="0",cellspacing="0", cellpadding="0",
                          background="/images/nav/bottom_shadow2.jpg")
         nav_under_page.tr()
-        nav_under_page.td()
-        nav_under_page.img(src="/images/nav/bottom_shadow.jpg", width=43, height="9")
-        nav_under_page.td.close()
+        nav_under_page.td(e.img(src="/images/nav/bottom_shadow.jpg", width=43, height="9"))
         nav_under_page.tr.close()
         nav_under_page.table.close()
         # end tab_under_modcats_inner
@@ -674,9 +650,7 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
     else:
 ##        tab_under_modcats.append(TR() + [TD(IMG("/images/nav/bottom_shadow.jpg", width=43, height="9"))])
         nav_under_page.tr()
-        nav_under_page.td()
-        nav_under_page.img(src="/images/nav/bottom_shadow.jpg", width=43, height="9")
-        nav_under_page.td.close()
+        nav_under_page.td(e.img(src="/images/nav/bottom_shadow.jpg", width=43, height="9"))
         nav_under_page.tr.close()
     nav_under_page.table.close()
     
@@ -715,15 +689,9 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
         ptitle_table.td()
         ptitle_table.table(border=0, cellpadding=0, cellspacing=0, height=20)
         ptitle_table.tr()
-        ptitle_table.td(bgcolor="#bae3ff")
-        ptitle_table.img(src="/images/tabs/blue_left.jpg", width=13,height=22)
-        ptitle_table.td.close()
-        ptitle_table.td(bgcolor="#bae3ff")
-        ptitle_table.strong(title)
-        ptitle_table.td.close()
-        ptitle_table.td(bgcolor="#bae3ff")
-        ptitle_table.img(src="/images/tabs/blue_right.jpg", width=13,height=22)
-        ptitle_table.td.close()
+        ptitle_table.td(e.img(src="/images/tabs/blue_left.jpg", width=13,height=22),bgcolor="#bae3ff")
+        ptitle_table.td(e.strong(title),bgcolor="#bae3ff")
+        ptitle_table.td(e.img(src="/images/tabs/blue_right.jpg", width=13,height=22),bgcolor="#bae3ff")
         ptitle_table.tr.close()
         ptitle_table.table.close()
         ptitle_table.td.close()
@@ -768,8 +736,7 @@ def theme_footer(links, noendbody=None):
 ##                                           align="middle", border="0",
 ##                                           alt="<-")))
             cont.add("&nbsp;")
-            # markups aimg is currently not working            
-            cont.a("<img src='/images/arrow.jpg' alt='&lt;-' border='0' align='middle' />",href=uri)            
+            cont.a(e.img(src="/images/arrow.jpg", alt="&lt;-", border="0", align="middle"),href=uri)
             
         else:
             cont.add("&nbsp;")

@@ -2,8 +2,8 @@
 # with absolutely no warranty and you can do
 # absolutely whatever you want with it.
 
-__date__ = '1 May 2006'
-__version__ = '1.4'
+__date__ = '4 Sep 2006'
+__version__ = '1.5'
 __doc__= """
 This is markup.py - a Python module that attempts to
 make it easier to generate HTML/XML from a Python program
@@ -11,7 +11,7 @@ in an intuitive, lightweight, customizable and pythonic way.
 
 The code is in the public domain.
 
-Current version is %s as of %s.
+Version: %s as of %s.
 
 Documentation and further info is at http://markup.sourceforge.net/
 
@@ -25,13 +25,13 @@ Python version.
 
 import string
 
-class tag:
-    """This class handles the addition of a new element (maybe should be called element and not tag :))."""
+class element:
+    """This class handles the addition of a new element."""
 
-    def __init__( self, parent, tag ):
+    def __init__( self, tag, case='lower', parent=None ):
         self.parent = parent
 
-	if self.parent.case == 'lower':
+	if case == 'lower':
 	    self.tag = tag.lower( )
 	else:
 	    self.tag = tag.upper( )
@@ -39,16 +39,21 @@ class tag:
     def __call__( self, *args, **kwargs ):
         if len( args ) > 1:
             raise ArgumentError( self.tag )
-        
+
+        if self.parent is None and len( args ) == 1:
+            x = [ self.render( self.tag, False, myarg, mydict ) for myarg, mydict in self.argsdicts( args, kwargs ) ]
+            return ''.join( x )
+        elif self.parent is None and len( args ) == 0:
+            x = [ self.render( self.tag, True, myarg, mydict ) for myarg, mydict in self.argsdicts( args, kwargs ) ]
+            return ''.join( x )
+            
         if self.tag in self.parent.twotags:
             for myarg, mydict in self.argsdicts( args, kwargs ):
                 self.render( self.tag, False, myarg, mydict )
-        
         elif self.tag in self.parent.onetags:
             if len( args ) == 0:
                 for myarg, mydict in self.argsdicts( args, kwargs ):
-                    # here myarg is always None, because len( args ) = 0
-                    self.render( self.tag, True, myarg, mydict )
+                    self.render( self.tag, True, myarg, mydict )    # here myarg is always None, because len( args ) = 0
             else:
                 raise ClosingError( self.tag )
         elif self.parent.mode == 'strict_html' and self.tag in self.parent.deptags:
@@ -60,24 +65,27 @@ class tag:
         """Append the actual tags to content."""
 
 	out = "<%s" % tag
-	for key, value in kwargs.iteritems():
-            # strip this so class_ will mean class, etc.
-            key = key.strip('_')
-            # special cases, maybe change _ to - overall?
-            if key == 'http_equiv':
-                key = 'http-equiv'
-            elif key == 'accept_charset':
-                key = 'accept-charset'
-            out = out + " %s='%s'" % ( key, value )
+	for key, value in kwargs.iteritems( ):
+            if value is not None:               # when value is None that means stuff like <... checked>
+                key = key.strip('_')            # strip this so class_ will mean class, etc.
+                if key == 'http_equiv':         # special cases, maybe change _ to - overall?
+                    key = 'http-equiv'
+                elif key == 'accept_charset':
+                    key = 'accept-charset'
+                out = "%s %s='%s'" % ( out, key, value )
+            else:
+                out = "%s %s" % ( out, key )
 	if between is not None:
-            between = str( between )
-	    out = out + ">%s</%s>" % ( between, tag )
+	    out = "%s>%s</%s>" % ( out, between, tag )
 	else:
 	    if single:
-		out = out + " />"
+		out = "%s />" % out
 	    else:
-		out = out + ">"
-	self.parent.content.append( out )	
+		out = "%s>" % out
+        if self.parent is not None:
+            self.parent.content.append( out )
+        else:
+            return out
     
     def close( self ):
         """Append a closing tag unless element has only opening tag."""
@@ -98,28 +106,23 @@ class tag:
             raise DeprecationError( self.tag )
 
     def argsdicts( self, args, mydict ):
-        """A utility function, should not be used from outside."""
-
-        # remove None values
-        newdict = mydict.copy()
-        for rem in mydict:
-            if newdict[rem] == None:
-                del newdict[rem]
-        mydict=newdict.copy()
-
-        # This will only be called with len( args ) = 0,1
+        """A utility function, should not be used from outside,
+        will only be called with len( args ) = 0, 1."""
+        
         if len( args ) == 0:
             args = [ None ]
         elif len( args ) == 1:
             if isinstance( args[0], basestring ):
                 args = [ args[0] ]
+            elif isinstance( args[0], int ) or isinstance( args[0], float ):
+                args = [ str( args[0] ) ]
             else:
                 args = list( args[0] )
         else:
             raise Exception, "We should have never gotten here."
 
         for key, value in mydict.iteritems( ):
-            if isinstance( value, basestring ) or isinstance( value, int ):
+            if isinstance( value, basestring ) or isinstance( value, int ) or value is None:
                 mydict[ key ] = [ value ]
             else:
                 mydict[ key ] = list( value )
@@ -144,27 +147,28 @@ class tag:
 
         return argdict
 
-        
 class page:
     """This is our main class representing a document. Elements are added
     as attributes of an instance of this class."""
 
-    def __init__( self, mode='strict_html', case='lower', onetags=None, twotags=None ):
+    def __init__( self, mode='strict_html', case='lower', onetags=None, twotags=None, separator='\n' ):
         """Stuff that effects the whole document.
 
-        mode -- 'strict_html'   for HTML 4.01
+        mode -- 'strict_html'   for HTML 4.01 (default)
                 'html'          alias for 'strict_html'
                 'loose_html'    to allow some deprecated elements
                 'xml'           to allow arbitrary elements
 
-        case -- 'lower'         element names will be printed in lower case
+        case -- 'lower'         element names will be printed in lower case (default)
                 'upper'         they will be printed in upper case
 
         onetags --              list or tuple of valid elements with opening tags only
         twotags --              list or tuple of valid elements with both opening and closing tags
                                 these two keyword arguments may be used to select
                                 the set of valid elements in 'xml' mode
-                                invalid elements will raise appropriate exceptions"""
+                                invalid elements will raise appropriate exceptions
+        
+        separator --            string to place between added elements, defaults to newline"""
         
         valid_onetags = [ "AREA", "BASE", "BR", "COL", "FRAME", "HR", "IMG", "INPUT", "LINK", "META", "PARAM" ]
         valid_twotags = [ "A", "ABBR", "ACRONYM", "ADDRESS", "B", "BDO", "BIG", "BLOCKQUOTE", "BODY", "BUTTON",
@@ -181,9 +185,10 @@ class page:
 	self.content = [ ]
         self.footer = [ ]
 	self.case = case
+        self.separator = separator
 
         # init( ) sets it to True so we know that </body></html> has to be printed at the end
-        self.full = False
+        self._full = False
 
 	if mode == 'strict_html' or mode == 'html':
 	    self.onetags = valid_onetags
@@ -213,15 +218,16 @@ class page:
 	    raise ModeError( mode )
 
     def __getattr__( self, attr ):
-        return tag( self, attr )
+        return element( attr, case=self.case, parent=self )
 
     def __str__( self ):
-	str = ''
-	for line in self.header + self.content + self.footer:
-	    str = str + line + '\n'
-        if self.full and ( self.mode == 'strict_html' or self.mode == 'loose_html' ):
-            str = str + '</body>\n</html>'
-	return str
+        
+        if self._full and ( self.mode == 'strict_html' or self.mode == 'loose_html' ):
+            end = [ '</body>', '</html>' ]
+        else:
+            end = [ ]
+	
+        return self.separator.join( self.header + self.content + self.footer + end )
 
     def __call__( self, escape=False ):
         """Return the document as a string.
@@ -233,7 +239,7 @@ class page:
         if escape:
             return _escape( self.__str__( ) )
         else:
-            return self.__str__()
+            return self.__str__( )
 
     def add( self, text ):
         """This is an alias to addcontent."""
@@ -253,7 +259,7 @@ class page:
 
 
     def init( self, lang='en', css=None, metainfo=None, title=None, header=None,
-              footer=None, charset=None, encoding=None, doctype=None ):
+              footer=None, charset=None, encoding=None, doctype=None, bodyattrs=None ):
         """This method is used for complete documents with appropriate
         doctype, encoding, title, etc information. For an HTML/XML snippet
         omit this method.
@@ -266,6 +272,10 @@ class page:
 
         metainfo -- a dictionary in the form { 'name':'content' } to be inserted
                     into meta element(s) as <meta name='name' content='content'>
+                    (ignored in xml mode)
+
+        bodyattrs --a dictionary in the form { 'key':'value', ... } which will be added
+                    as attributes of the <body> element as <body key='value' ... >
                     (ignored in xml mode)
 
         title --    the title of the document as a string to be inserted into
@@ -289,7 +299,7 @@ class page:
                     <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN'>
                     in html mode (ignored in xml mode)"""
 
-        self.full = True
+        self._full = True
 
         if self.mode == 'strict_html' or self.mode == 'loose_html':
             if doctype is None:
@@ -306,7 +316,10 @@ class page:
             if title is not None:
                 self.title( title )
             self.head.close()
-            self.body()
+            if bodyattrs is not None:
+                self.body( **bodyattrs )
+            else:
+                self.body( )
             if header is not None:
                 self.content.append( header )
             if footer is not None:
@@ -341,14 +354,20 @@ class page:
         else:
             raise TypeError, "Metainfo should be called with a dictionary argument of name:content pairs."
 
-    def aimg( self, href='', src='', width=None, height=None, alt='This is an image.', aklass=None, imgklass=None, border=None ):
-	"""Shorthand for <a ... ><img ... ></a>."""
+class _oneliner:
+    """An instance of oneliner returns a string corresponding to one element.
+    This class can be used to write 'oneliners' that return a string
+    immediately so there is no need to instantiate the page class."""
+    
+    def __init__( self, case='lower' ):
+        self.case = case
+    
+    def __getattr__( self, attr ):
+        return element( attr, case=self.case, parent=None )
 
-        i = page( )
-        i.img( src=src, width=width, height=height, alt=alt, class_=imgklass, border=border )
-        simg =  str(i).replace("\n", "")
-        self.a( simg, href=href ,class_=aklass )
- 
+oneliner = _oneliner( case='lower' )
+upper_oneliner = _oneliner( case='upper' )
+
 def escape( text ):
     """Substitute &gt; for > and &lt; for < in text. Useful for rendering < or > in web browsers."""
 
