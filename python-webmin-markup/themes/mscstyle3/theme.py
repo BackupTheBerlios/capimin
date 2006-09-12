@@ -330,7 +330,7 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
     hpage.table(width="100%", border="0", cellspacing="0",
                           cellpadding="0", background="/images/top_bar/bg.jpg",
                           height="32")
-    hpage.tr.open()    
+    hpage.tr()    
     
 ##    TDList = [TD(IMG("/images/top_bar/left.jpg", height=32),
 ##                 width=4, nowrap="nowrap"),
@@ -342,7 +342,7 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
 
     # TODO (Carsten) : missig auto alt tags for images (really needed ?)
     hpage.td(e.img(src="/images/top_bar/left.jpg", height="32"),width="4", nowrap="nowrap")
-    hpage.td.open(width="100%", nowrap="nowrap")
+    hpage.td(width="100%", nowrap="nowrap")
     hpage.a(e.img(src=pytheme_logo,width=99, height=32,alt=pytheme_logo_alt,border=0),href=pytheme_logo_link)
     hpage.td.close()
     
@@ -354,7 +354,7 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
 ##                                  IMG("/images/top_bar/feedback.jpg", width=97,
 ##                                      height=32,
 ##                                      border="0", alt=text["feedback"]))))
-            hpage.td.open()
+            hpage.td()
             hpage.a(e.img(src="/images/top_bar/feedback.jpg",width=97,height=32,border=0,
                        alt=text["feedback"]),href="/feedback_form.cgi?module=%s" % module_name)
             hpage.td.close()
@@ -367,7 +367,7 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
 ##                              IMG("/images/top_bar/"+loicon, width=lowidth,
 ##                                  height=32,
 ##                                  alt=lotext, border="0"))))
-        hpage.td.open()
+        hpage.td()
         hpage.a(e.img(src="/images/top_bar/"+loicon,width=lowidth ,height=32,border=0,alt=lotext),href=logout)
         hpage.td.close()
 
@@ -442,10 +442,10 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
     # (Carsten) The background attribute is not in the final html code with HTMLgen
 ##    nav_table_body = TR(background="/images/nav/bg.jpg")
 
-    nav_page.table.open(width="100%", border="0", cellspacing="0",
+    nav_page.table(width="100%", border="0", cellspacing="0",
                           cellpadding="0", height="57",
                           background="/images/nav/bg.jpg")
-    nav_page.tr.open(background="/images/nav/bg.jpg")
+    nav_page.tr(background="/images/nav/bg.jpg")
 
 ##    TDList = [TD(IMG("/images/nav/left.jpg", width=3, height=57),
 ##                 width="6", nowrap="nowrap")]
@@ -454,9 +454,9 @@ def theme_header(title, image=None, help=None, config=None, nomodule=None, noweb
     for cat in sorted_cats:
         uri = "/?cat=%s" % cat
 ##        cont = Container()
-        nav_page.td.open(nowrap="nowrap")
+        nav_page.td(nowrap="nowrap")
         nav_page.center()
-        nav_page.a.open(href=uri)
+        nav_page.a(href=uri)
         if cat in available:
             if "" == cat:
 ##                cont.append(IMG("/images/cats/others.jpg", width=43, height=44,
@@ -716,10 +716,10 @@ def theme_footer(links, noendbody=None):
 ##    cont = Container()
 
     cont = markup.page()
-    cont.table.open(border=0,width="100%", align="center",
+    cont.table(border=0,width="100%", align="center",
                      cellspacing=0, cellpadding=0, bgcolor="#6696bc")
-    cont.tr.open()
-    cont.td.open()
+    cont.tr()
+    cont.td()
     
 
     for i in range(len(links)):
